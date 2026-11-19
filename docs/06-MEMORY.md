@@ -29,8 +29,8 @@
 
 | Phase | Name | Status | Date | Notes |
 |---|---|---|---|---|
-| P0 | Setup & keys | TODO | | |
-| P1 | Skeleton | TODO | | |
+| P0 | Setup & keys | TODO | | repo + docs exist; `.env` not present in this checkout |
+| P1 | Skeleton | DONE (tests passed) | 2026-11-19 | 13 tests pass; `/api/health` + `/` verified |
 | P2 | Bifrost client + fallback | TODO | | |
 | P3 | Tavily client | TODO | | |
 | P4 | Claim extraction | TODO | | |
@@ -65,6 +65,8 @@ Provider field location: `(fill)` · Fallback request field: `(fill)`
 | 2 | LLM decides type/verdict; code decides TTL/score/expiry | deterministic, explainable | pre |
 | 3 | Own SQLite TTL cache instead of Bifrost semantic cache | faster to build, shows per-fact TTL idea | pre |
 | 4 | Vanilla JS frontend, no build step | fewer bugs in 2 days | pre |
+| 5 | Add `pytest.ini` with `pythonpath = .` | `pytest tests/test_ttl.py -q` cannot import `app` otherwise | P1 |
+| 6 | `Claim.expires_at` typed as `datetime \| None`, serialized ISO-8601 | keeps expiry typed, matches contract string shape | P1 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -72,6 +74,11 @@ Provider field location: `(fill)` · Fallback request field: `(fill)`
 npx -y @maximhq/bifrost
 uvicorn app.main:app --reload --port 8000
 pytest -q
+# P1 gate (verified 2026-11-19)
+pytest tests/test_ttl.py -q                 # 13 passed
+uvicorn app.main:app --port 8000 &
+curl localhost:8000/api/health              # {"ok":true,"bifrost":...,"tavily_key_set":...}
+curl -s localhost:8000/ | head -n 5         # serves web/index.html
 ```
 
 ## 7. Environment (names only, never values)
@@ -82,7 +89,10 @@ Actual model names in use: `PRIMARY=(fill) FALLBACK=(fill) WEAK=(fill)`
 
 ## 8. Known issues / gotchas
 
-- (none yet)
+- This checkout has no `.env`, so `tavily_key_set` is `false` until P0 keys are added locally.
+- Bifrost not running during the P1 run → `bifrost: false` (expected; endpoint never raises). Branch proven with a stub listener on :8080 → `bifrost: true`.
+- `respx` is not installed globally; needed only from P3/P5 — `pip install -r requirements.txt`.
+- Local interpreter is Python 3.14 (docs say 3.11+); everything used so far is compatible.
 
 ## 9. Benchmark snapshot (fill in P8)
 
