@@ -33,7 +33,7 @@
 | P1 | Skeleton | DONE (tests passed) | 2026-11-19 | 13 tests pass; `/api/health` + `/` verified |
 | P2 | Bifrost client + fallback | DONE (tests passed) | 2026-11-20 | 6 unit tests; 2b = groq / `fallback_triggered=False`, 2c = gemini / `fallback_triggered=True`, both HTTP 200 |
 | P3 | Tavily client | DONE (tests passed) | 2026-11-20 | 7 mocked tests; 2a live (5 results, 2 493 ms), 2b cache hit (1 ms, no API call) |
-| P4 | Claim extraction | TODO | | |
+| P4 | Claim extraction | DONE (tests passed) | 2026-11-20 | 10 mocked tests; live run extracted 3/3 claims with pricing→1d, leadership→30d, stable→None |
 | P5 | Verify pipeline | TODO | | |
 | P6 | Cache + endpoints | TODO | | |
 | P7a | UI shell | TODO | | |
@@ -168,6 +168,9 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 10 | Search cache key = `sha1(query.strip().lower())` in the shared `ttl_cache.db` (`searches` table) | case/spacing variants reuse one row; one DB file holds both caches (§8) | P3 |
 | 11 | `try_tavily` reads a module-level `last_raw` for the raw payload | shows the real shape without spending a second Tavily credit | P3 |
 | 12 | Timeout gets exactly one retry with 1 s backoff; 401/403/429 fail immediately | 03-RULES §D: one retry, never a retry storm | P3 |
+| 13 | Extraction uses `WEAK_MODEL` (fallback to `PRIMARY_MODEL` if unset) | cheapest/fastest call: 3 claims in ~2.1 s, no need for the 120b model | P4 |
+| 14 | The extraction user message is `TODAY: <date>\nANSWER:\n<answer>` (`CLAIMS_SYSTEM` itself stays byte-identical to 03-RULES §C) | without a date the model wrote `search_query: "…2024"` from its training year, which would return stale evidence in P5 | P4 |
+| 15 | `search_query` lives in `claims.last_queries[id]`, not on `Claim` | `Claim` has no `search_query` field in the frozen contract (§5) and P4 may not edit `models.py`; P5 must consume the map or log a contract change | P4 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -189,6 +192,9 @@ python -m scripts.try_bifrost "Say hello" --force-fallback  # HTTP 200 provider=
 python -m scripts.try_tavily "Notion Plus plan price per month"   # 1st: source: live Tavily call, 5 results, 2 493 ms
 python -m scripts.try_tavily "Notion Plus plan price per month"   # 2nd: source: cache (no API call), 1 ms
 pytest tests/test_tavily_mocked.py -q                              # 7 passed
+# P4 gate (verified 2026-11-20, both exit 0)
+pytest tests/test_claims_parse.py -q                 # 10 passed
+python -m scripts.try_claims '<answer text>'        # 3 claims, ~2.1 s, pricing/leadership/stable
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -219,6 +225,10 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - The search cache and the fact cache share `ttl_cache.db`; a second identical CLI run printed `source: cache (no API call)` with `elapsed_ms=1` vs `2493` cold — that timing gap is the proof no credit was spent.
 - SQLite failures in `tavily_client` are swallowed to a logged warning (cache read/write only), so search still works with an unusable DB file. No retry loop there by design.
 - `.env` is read at import time: a new key needs a fresh `python -m ...` process, not a running one.
+- `CLAIMS_SYSTEM` (frozen) asks for "the year/current wording" but never says what year it is; asked without a date the model answered `Notion Plus plan price 2024`. Fixed by putting `TODAY: <date>` in the user message (decision 14) — full re-run then produced `…2026`.
+- `claims.last_queries` and `claims.last_raw` are module state reset at the start of every `extract()` call: safe for the CLI, but two concurrent requests would overwrite each other. P5 should read the queries right after its own `extract()` await, or propose the `Claim.search_query` contract change.
+- The model still returns a `search_query` for `stable` claims even though the prompt says to leave it empty; harmless, because P5 skips stable claims, and it is kept verbatim for debugging.
+- Requests cost 2 calls only on the repair path: `raw model reply (repair_retry=False)` in the script is the proof a single call was enough.
 
 ## 9. Benchmark snapshot (fill in P8)
 
