@@ -57,6 +57,16 @@ class Source(BaseModel):
     published: str | None = None
 
 
+class Evidence(BaseModel):
+    """One web search result handed to the judge (02-ARCHITECTURE.md §7)."""
+
+    title: str
+    url: str
+    content: str
+    published_date: str | None = None
+    score: float = 0.0
+
+
 class Claim(BaseModel):
     """A single factual claim with its verification result."""
 

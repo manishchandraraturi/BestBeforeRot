@@ -32,7 +32,7 @@
 | P0 | Setup & keys | DONE (tests passed) | 2026-11-20 | Groq + Gemini keys in the Bifrost UI; `.env` present locally (gitignored); proven by the P2 live gate |
 | P1 | Skeleton | DONE (tests passed) | 2026-11-19 | 13 tests pass; `/api/health` + `/` verified |
 | P2 | Bifrost client + fallback | DONE (tests passed) | 2026-11-20 | 6 unit tests; 2b = groq / `fallback_triggered=False`, 2c = gemini / `fallback_triggered=True`, both HTTP 200 |
-| P3 | Tavily client | TODO | | |
+| P3 | Tavily client | DONE (tests passed) | 2026-11-20 | 7 mocked tests; 2a live (5 results, 2 493 ms), 2b cache hit (1 ms, no API call) |
 | P4 | Claim extraction | TODO | | |
 | P5 | Verify pipeline | TODO | | |
 | P6 | Cache + endpoints | TODO | | |
@@ -124,10 +124,33 @@ Headers on that answer: `x-bifrost-routing-info-provider: gemini`, `x-bifrost-ro
 ```
 Note the 404 envelope: Bifrost *does* attempt the fallback when the primary model is missing, and the router still reports `routing_info.provider` for the attempt that answered with the error. Both refusals are HTTP >= 400, so `chat()` raises `UpstreamError` — correct behaviour.
 
-**Tavily raw response (first call):**
+**Tavily raw response (real call, 2026-11-20, `POST /search`, `search_depth: basic`, HTTP 200, 2 493 ms):**
+```json
+{
+  "query": "Notion Plus plan price per month",
+  "follow_up_questions": null,
+  "answer": null,
+  "images": [],
+  "results": [
+    {
+      "url": "https://thedigitalprojectmanager.com/tools/notion-pricing",
+      "title": "Notion Pricing Tiers & Costs",
+      "content": "The Plus Plan, at $10 per seat/month, is suited for small to medium-sized teams needing more advanced features. It offers unlimited blocks, file uploads, and a 30-day page history. ... (multi-paragraph text; our client keeps the first 600 chars)",
+      "score": 0.8440237,
+      "raw_content": null,
+      "id": "4bb286-00"
+    },
+    {"url": "https://www.notion.com/pricing", "title": "Notion Pricing Plans: Free, Plus, Business, & Enterprise.", "score": 0.806, "raw_content": null, ...},
+    {"url": "https://www.activepieces.com/blog/notion-pricing-2026-plans-ai-and-what-each-costs", "title": "Notion Pricing 2026: Plans, AI and What Each Costs", "score": 0.800, ...},
+    {"url": "https://www.youtube.com/watch?v=6uSN7Labj3Q", "title": "Notion Pricing Explained: Why It’s Worth the Money", "score": 0.510, ...},
+    {"url": "https://www.notion.com/help/upgrade-or-downgrade-your-plan", "title": "Change your Notion plan | Notion Help – Notion Help Center", "score": 0.501, ...}
+  ]
+}
 ```
-(paste here)
-```
+- Each result carries exactly `url, title, content, score, raw_content, id`. **There is no `published_date` key at all** on these five results: with `search_depth: "basic"` and no `topic`/`time_range`, Tavily simply omits it. So `Evidence.published_date` stays `None` and the judge prompt's `published` column will be empty for most claims until we ask for news/date-filtered results (a P5 decision — the frozen P3 body is unchanged).
+- `answer` is `null` (we send `include_answer: false`), `images` is `[]`, `follow_up_questions` is `null`.
+- `score` is a float already sorted descending (~0.50–0.84); it is relevance, not freshness — never use it as a date signal.
+- Top-level `response_time` is also present (truncated out of the snippet above).
 
 ## 5. Decision log
 
@@ -142,6 +165,9 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 7 | Turn off Bifrost `client.enforce_auth_on_inference` instead of sending `x-bf-vk` | keeps the frozen P2 contract (no auth header, no new env var, no secret in `.env`) | P2 |
 | 8 | Use live model IDs `groq/openai/gpt-oss-120b`, `gemini/gemini-3.5-flash-lite`, `groq/openai/gpt-oss-20b` | the originally planned IDs are retired on both providers and 404 | P2 |
 | 9 | `try_bifrost` prints the raw body on every run and forces UTF-8 stdout | the fallback raw envelope is the evidence; cp1252 console crashed on an emoji | P2 |
+| 10 | Search cache key = `sha1(query.strip().lower())` in the shared `ttl_cache.db` (`searches` table) | case/spacing variants reuse one row; one DB file holds both caches (§8) | P3 |
+| 11 | `try_tavily` reads a module-level `last_raw` for the raw payload | shows the real shape without spending a second Tavily credit | P3 |
+| 12 | Timeout gets exactly one retry with 1 s backoff; 401/403/429 fail immediately | 03-RULES §D: one retry, never a retry storm | P3 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -159,6 +185,10 @@ pip install respx                            # test dep, was missing locally
 pytest tests/test_bifrost.py -q              # 6 passed
 python -m scripts.try_bifrost "Say hello"                 # HTTP 200 provider=groq fallback_triggered=False
 python -m scripts.try_bifrost "Say hello" --force-fallback  # HTTP 200 provider=gemini fallback_triggered=True
+# P3 gate (verified 2026-11-20, all three exit 0)
+python -m scripts.try_tavily "Notion Plus plan price per month"   # 1st: source: live Tavily call, 5 results, 2 493 ms
+python -m scripts.try_tavily "Notion Plus plan price per month"   # 2nd: source: cache (no API call), 1 ms
+pytest tests/test_tavily_mocked.py -q                              # 7 passed
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -185,6 +215,10 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - Gemini free tier returns `503 UNAVAILABLE "This model is currently experiencing high demand"` on busy models (`gemini-3.8-flash`, `gemini-3.1-flash-lite`); `gemini-3.5-flash-lite` answered. A fallback hop therefore costs real time — measured 7 029 ms — which eats most of the 25 s `REQUEST_TIMEOUT_S` budget.
 - The fallback response's `usage` counts only the provider that answered (3 in / 9 out on the gemini hop). The failed groq attempt is not counted, so P8 cost numbers must not read `usage` as the cost of the whole routed request.
 - `try_bifrost` prints the raw body before calling `chat()`, so every run makes two gateway calls; on the slow fallback path the first call can hit the 25 s read timeout (`httpx.ReadTimeout` traceback). Just rerun — it is upstream load, not a code bug.
+- Tavily with `search_depth: "basic"` returns **no `published_date`** (verified on all 5 results), so `Evidence.published_date` is `None` today and freshness must come from content wording, not metadata. Fixing that needs `topic: "news"` or a `time_range`, which the frozen P3 body does not allow — decide in P5.
+- The search cache and the fact cache share `ttl_cache.db`; a second identical CLI run printed `source: cache (no API call)` with `elapsed_ms=1` vs `2493` cold — that timing gap is the proof no credit was spent.
+- SQLite failures in `tavily_client` are swallowed to a logged warning (cache read/write only), so search still works with an unusable DB file. No retry loop there by design.
+- `.env` is read at import time: a new key needs a fresh `python -m ...` process, not a running one.
 
 ## 9. Benchmark snapshot (fill in P8)
 
