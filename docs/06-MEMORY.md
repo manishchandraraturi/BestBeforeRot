@@ -34,7 +34,7 @@
 | P2 | Bifrost client + fallback | DONE (tests passed) | 2026-11-20 | 6 unit tests; 2b = groq / `fallback_triggered=False`, 2c = gemini / `fallback_triggered=True`, both HTTP 200 |
 | P3 | Tavily client | DONE (tests passed) | 2026-11-20 | 7 mocked tests; 2a live (5 results, 2 493 ms), 2b cache hit (1 ms, no API call) |
 | P4 | Claim extraction | DONE (tests passed) | 2026-11-20 | 10 mocked tests; live run extracted 3/3 claims with pricing→1d, leadership→30d, stable→None |
-| P5 | Verify pipeline | TODO | | |
+| P5 | Verify pipeline | DONE (tests passed) | 2026-11-20 | 27 tests; live: stale $5 → stale + 4 real sources → corrected $10, stable skipped, overall 58 mixed; bad key → unverifiable, exit 0 |
 | P6 | Cache + endpoints | TODO | | |
 | P7a | UI shell | TODO | | |
 | P7b | UI console | TODO | | |
@@ -171,6 +171,12 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 13 | Extraction uses `WEAK_MODEL` (fallback to `PRIMARY_MODEL` if unset) | cheapest/fastest call: 3 claims in ~2.1 s, no need for the 120b model | P4 |
 | 14 | The extraction user message is `TODAY: <date>\nANSWER:\n<answer>` (`CLAIMS_SYSTEM` itself stays byte-identical to 03-RULES §C) | without a date the model wrote `search_query: "…2024"` from its training year, which would return stale evidence in P5 | P4 |
 | 15 | `search_query` lives in `claims.last_queries[id]`, not on `Claim` | `Claim` has no `search_query` field in the frozen contract (§5) and P4 may not edit `models.py`; P5 must consume the map or log a contract change | P4 |
+| 16 | `judge.Verdict` is a Pydantic result model; the enum `models.Verdict` is imported there as `VerdictKind` | the P5 spec asks for `judge() -> Verdict` holding corrected text/sources, but `models.Verdict` is the 3-value enum and `models.py` is frozen | P5 |
+| 17 | `score_claims` writes `claim.score` and returns the PRD §7 weighted mean; weights fast 1.5 / slow 1.0, stable and unjudged rows skipped | one place decides score numbers (02-ARCHITECTURE §9.3); P6 only formats them | P5 |
+| 18 | An answer with no scored claims (all stable / empty) scores **100 fresh** | nothing can go stale, and 0/risky would punish a history-only answer | P5 |
+| 19 | A crashed claim gets `status=error`, `verdict=unverifiable`, `reason="error"`, score 40 | matches 03-RULES §D and the P5 spec; the exception type/message goes to the log only | P5 |
+| 20 | The `MAX_PARALLEL` semaphore wraps search **and** judge together | §4 says the claim step is capped at 4 at once; capping only the search still floods the LLM | P5 |
+| 21 | Judge-cited urls are filtered against the evidence before becoming `Source` | 03-RULES §C.4/§C.5: the judge may only cite what Tavily returned, so code enforces it | P5 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -195,6 +201,12 @@ pytest tests/test_tavily_mocked.py -q                              # 7 passed
 # P4 gate (verified 2026-11-20, both exit 0)
 pytest tests/test_claims_parse.py -q                 # 10 passed
 python -m scripts.try_claims '<answer text>'        # 3 claims, ~2.1 s, pricing/leadership/stable
+# P5 gate (verified 2026-11-20, all exit 0)
+pytest tests/test_scoring.py tests/test_pipeline_mocked.py -q   # 27 passed
+python -m scripts.try_pipeline samples/pricing.txt           # 3 claims, 8 624 ms, stale w/ 4 urls, overall 58 mixed
+# 2c bad key WITHOUT touching .env (env var beats .env, throwaway cache DB forces a live call)
+TAVILY_API_KEY=bad-key CACHE_DB=ttl_cache_badkey.db python -m scripts.try_pipeline samples/pricing.txt  # both claims unverifiable, exit 0
+rm -f ttl_cache_badkey.db
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -229,6 +241,12 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - `claims.last_queries` and `claims.last_raw` are module state reset at the start of every `extract()` call: safe for the CLI, but two concurrent requests would overwrite each other. P5 should read the queries right after its own `extract()` await, or propose the `Claim.search_query` contract change.
 - The model still returns a `search_query` for `stable` claims even though the prompt says to leave it empty; harmless, because P5 skips stable claims, and it is kept verbatim for debugging.
 - Requests cost 2 calls only on the repair path: `raw model reply (repair_retry=False)` in the script is the proof a single call was enough.
+- **Do not rename `TAVILY_API_KEY` inside `.env` to test the 401 path**: the file is unreadable to the agent, so the real key could not be restored. `TAVILY_API_KEY=bad-key ... python -m ...` overrides it for one process (env beats `.env` in pydantic-settings) and leaves the file alone.
+- A bad-key run must also point `CACHE_DB` at a throwaway file (`CACHE_DB=ttl_cache_badkey.db`), otherwise the 6-hour search cache answers first, no Tavily call happens and the claims come back fresh instead of `unverifiable`.
+- `judge.py` duplicates the ~8-line `_strip_fences` helper from `claims.py` because services may not import each other (02-ARCHITECTURE §9.5) and P5's file list has no shared util; if a third caller appears, move it into `prompts.py` or a utils module.
+- Tavily `basic` still returns no `published_date`, so every `Source.published` in a live run is `None`. The judge is told the evidence has no dates and still judged correctly (stale $5 → $10), so this is cosmetic for the demo; only `topic: "news"`/`time_range` would fix it, which the frozen search body forbids.
+- Free-tier latency: `samples/pricing.txt` cold took 8 624 ms for 3 claims (2 searched, 1 skipped) — inside the PRD's <20 s budget but with little room if the gemini fallback hop triggers.
+- `tests/test_scoring.py` first asserted 68 for the fast/slow mean; the correct value is 65 ((99*1.5+15)/2.5). Recompute by hand before "fixing" the code when a weighted-mean test fails.
 
 ## 9. Benchmark snapshot (fill in P8)
 
