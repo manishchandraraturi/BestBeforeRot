@@ -100,9 +100,15 @@
         </div>
       </div>
 
-      <!-- marquee -->
+      <!-- marquee: 8 identical spans = 4 per half, so the -50% loop is seamless -->
       <div class="marquee" aria-hidden="true">
         <div class="marquee-track">
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
           <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
           <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
         </div>
@@ -118,11 +124,111 @@
         </div>
 
         <div class="console-grid">
-          <div class="panel" aria-hidden="true">
-            <span class="panel-tag">INPUT</span>
+          <!-- LEFT: input card -->
+          <div class="panel panel-input">
+            <div class="panel-head">
+              <span class="panel-tag">INPUT</span>
+              <span class="panel-meta">PLAIN TEXT · MAX 4000</span>
+            </div>
+
+            <textarea id="answer" class="field" placeholder="Paste an AI answer here..."
+                      spellcheck="false" maxlength="4000" aria-label="AI answer to verify"></textarea>
+
+            <div class="chips" role="group" aria-label="Sample answers">
+              <button type="button" class="chip" data-sample="pricing">Pricing</button>
+              <button type="button" class="chip" data-sample="version">API version</button>
+              <button type="button" class="chip" data-sample="ceo">CEO</button>
+            </div>
+
+            <div class="toggles">
+              <label class="switch-row">
+                <input type="checkbox" id="use-cache" checked>
+                <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+                <span class="switch-label">Use cache</span>
+              </label>
+              <label class="switch-row">
+                <input type="checkbox" id="force-fallback">
+                <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+                <span class="switch-label">Simulate outage</span>
+              </label>
+            </div>
+
+            <p class="input-note">Claims are checked on the live web with Tavily.</p>
+
+            <button type="button" class="btn btn-primary verify-btn" id="verify">
+              <span class="btn-label">Verify</span>
+              <span class="arrow" aria-hidden="true">→</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
           </div>
-          <div class="panel" aria-hidden="true">
-            <span class="panel-tag">RESULT</span>
+
+          <!-- RIGHT: result panel -->
+          <div class="panel panel-result" id="result" data-state="empty" aria-live="polite">
+            <div class="panel-head">
+              <span class="panel-tag">RESULT</span>
+              <span class="panel-meta" id="result-meta">WAITING</span>
+            </div>
+
+            <!-- empty -->
+            <div class="state state-empty" data-when="empty">
+              <svg class="empty-doodle" viewBox="0 0 96 96" fill="none" stroke="currentColor"
+                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="48" cy="48" r="34"/>
+                <path d="M48 30v19l12 8"/>
+              </svg>
+              <p class="empty-line">Paste an AI answer to begin.</p>
+              <p class="empty-sub">You get a freshness score and a fixed answer.</p>
+            </div>
+
+            <!-- loading -->
+            <div class="state state-loading" data-when="loading">
+              <p class="ticker" id="ticker">SPLITTING CLAIMS</p>
+              <div class="skeleton skeleton-score"></div>
+              <div class="skeleton skeleton-stats"></div>
+              <div class="skeleton skeleton-card"></div>
+              <div class="skeleton skeleton-card short"></div>
+            </div>
+
+            <!-- populated -->
+            <div class="state state-result" data-when="result">
+              <div class="score" id="score" data-band="mixed">
+                <svg class="score-ring" viewBox="0 0 160 160" aria-hidden="true">
+                  <circle class="ring-track" cx="80" cy="80" r="70"></circle>
+                  <circle class="ring-progress" id="score-ring" cx="80" cy="80" r="70"></circle>
+                </svg>
+                <div class="score-center">
+                  <p class="score-value" id="score-value">0</p>
+                  <p class="score-band" id="score-band">—</p>
+                </div>
+              </div>
+
+              <p class="stats" id="stats"></p>
+              <p class="badges" id="badges"></p>
+
+              <div class="claims" id="claims">
+                <!-- sample card: replaced on the first real result -->
+                <article class="claim" data-verdict="stale">
+                  <div class="claim-head">
+                    <span class="dot is-stale" aria-hidden="true"></span>
+                    <span class="tag">PRICING</span>
+                    <span class="tag tag-quiet">TTL 1D</span>
+                    <span class="claim-verdict">STALE</span>
+                  </div>
+                  <p class="claim-text is-stale">The Notion Plus plan costs $5 per month.</p>
+                  <p class="claim-fix">Notion Plus now costs $10 per month.</p>
+                  <div class="sources">
+                    <a class="source" href="https://www.notion.com/pricing" target="_blank" rel="noopener noreferrer">notion.com ↗</a>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <!-- error -->
+            <div class="state state-error" data-when="error">
+              <p class="error-title">That check didn't finish.</p>
+              <p class="error-msg" id="error-msg">Something went wrong upstream.</p>
+              <button type="button" class="btn btn-outline retry-btn" id="retry">Try again</button>
+            </div>
           </div>
         </div>
       </div>

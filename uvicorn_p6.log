@@ -44,3 +44,8 @@ INFO:     127.0.0.1:55368 - "GET /app.js HTTP/1.1" 304 Not Modified
 INFO:     127.0.0.1:65202 - "GET / HTTP/1.1" 304 Not Modified
 INFO:     127.0.0.1:65202 - "GET /styles.css HTTP/1.1" 304 Not Modified
 INFO:     127.0.0.1:65203 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49215 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49218 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63224 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63224 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63224 - "GET /app.js HTTP/1.1" 200 OK

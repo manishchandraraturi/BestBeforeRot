@@ -37,7 +37,7 @@
 | P5 | Verify pipeline | DONE (tests passed) | 2026-11-20 | 27 tests; live: stale $5 → stale + 4 real sources → corrected $10, stable skipped, overall 58 mixed; bad key → unverifiable, exit 0 |
 | P6 | Cache + rewrite + stats + endpoints | DONE (tests passed) | 2026-11-21 | 11 cache/rewrite tests, 74 total; cold 7 386 ms `cache_hits=0` → warm 718 ms `cache_hits=1`, `tavily_credits_used=0` → fallback `fallback_triggered=true` on gemini; all HTTP 200 |
 | P7a | UI shell | DONE (tests passed) | 2026-11-21 | `web/index.html` rewritten, `web/styles.css` new, `web/app.js` created empty; fonts 200 from Google, 0 console errors, no horizontal scroll at 1440 or 375 |
-| P7b | UI console | TODO | | |
+| P7b | UI console | DONE (tests passed) | 2026-11-21 | Marquee gap fixed (8 spans, 0→-50%); console cards + `fetch /api/verify`; gate answer → 49 risky, Notion stale/red with `$12`, Sam Altman fresh/green, Eiffel Tower skipped; 0 console errors |
 | P7c | UI results polish | TODO | | |
 | P8 | Benchmark | TODO | | |
 | P9 | README / deck / video / submit | TODO | | |
@@ -187,6 +187,10 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 29 | The UI brand is **BestBeforeRot** (nav, `<title>`, footer wordmark), not the `FactTTL` name used inside the docs | the repo, README and assets already say BestBeforeRot; the P7a prompt names the footer wordmark explicitly | P7a |
 | 30 | All P7a motion is CSS-only (hero word reveal, doodle draw + float, marquee); `app.js` ships empty | the phase must not add JS; scroll-reveal, count-up and the tab logic are P7b/P7c | P7a |
 | 31 | The nav keeps only `Try it · How it works · GitHub` and the Results section is not built yet | 04-DESIGN lists a Results link, but the section is P7c work — a dead anchor is worse than one missing link | P7a |
+| 32 | The marquee is **8 identical spans** inside `.marquee-track` and still animates `0 → -50%` | 8 spans = two identical halves; the half is 2 386 px, so the strip covers any viewport up to that width and the loop has no blank right edge (measured `seamless: true` at 1 423 px) | P7b |
+| 33 | The three sample chips write a local `SAMPLES` string into the textarea instead of calling `GET /api/samples` | the phase says the chips only need to be styled; a local fill costs no request and keeps them from being dead buttons | P7b |
+| 34 | Score count-up + ring use `requestAnimationFrame`, but a `setTimeout` at `duration + 150` ms snaps both to their final value | rAF does not fire while the Freebuff window is minimised/covered — the gate showed `data-value="49"` with the number stuck at `0`; the timeout makes the result correct even with no frames | P7b |
+| 35 | Claim cards are built with `createElement` + `textContent` (never `innerHTML`) | claim text, reasons and source URLs come from the LLM and the web; text nodes make markup injection impossible | P7b |
 
 ## 6. Working commands (add as they are proven)
 
@@ -234,6 +238,17 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/          # 200
 curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/styles.css # 200
 curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/app.js     # 200
 # then in the browser: 1440x900 and 375x812, console empty, fonts.gstatic 200 for all three families
+# P7b gate (verified 2026-11-21, all HTTP 200, 0 console messages)
+node --check web/app.js                     # JS OK
+# browser at 127.0.0.1:8000, paste "The Notion Plus plan costs $5 per month. Sam Altman is the CEO of OpenAI.
+#   The Eiffel Tower is in Paris." and click Verify:
+#   loading -> state=loading, ticker + 4 skeletons + button spinner
+#   result  -> score 49 (band risky, red ring 224.31/439.82), CLAIMS 3 · SEARCHED 0 · SKIPPED 1 · CACHE 2 · LATENCY 1.5s,
+#              ROUTED VIA GROQ + FROM CACHE, claims: stale (struck, fix "…$12 per month.", 3 links),
+#              fresh (green dot, 4 links), skipped_stable (grey dot)
+# marquee: 8 spans, track 4 771 px, half 2 386 px >= 1 440; at translateX(-50%) content covers 0..1789 with no gap
+# 375x812: scrollWidth 358, panels stacked 318/318, textarea 180, chips/toggles 44, verify 46, stats no overflow
+# error paths (fetch stubbed in the page, no server change): short text, 503 body, network reject -> state=error + Try again
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -286,6 +301,11 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - The footer wordmark is sized by measurement, not by eye: the outline text is 6.45 × the font size wide, so at 375px anything above ~12.6vw overflows the 318px content box (`scrollWidth` 327 vs 318 at 13.5vw).
 - Doodles are absolutely positioned inside `.doodles`; on ≤640px only the ring and one sparkle stay visible, otherwise the browser/clock/magnifier sit on top of the headline and hurt legibility.
 - `preview_screenshot` on this host returns blank frames while the page is scrolled and the Freebuff window is minimised/covered (the `.hero` paints, later sections do not). Layout was verified with `preview_evaluate` rects in that case, not screenshots.
+- With the Freebuff window covered, `preview_screenshot` refuses with "it has not been drawn yet", and a real mouse click from `preview_click` on `#verify` did not fire the handler even though `elementFromPoint` at the same coordinates returned the button label. A programmatic `document.getElementById('verify').click()` drove every gate step; the button itself is not blocked (hit test passes).
+- The score/ring animation freezes at `0` in a hidden window because rAF is paused — decision 34's `setTimeout` snap is what makes the painted number and `stroke-dashoffset` arrive anyway.
+- `.stats` renders one `span` per cell plus a `span.stats-sep` holding `·`, with the label and value in separate nodes; `textContent` therefore reads `CLAIMS 3·SEARCHED 0…`, which is why the strip is a flex row and not one string.
+- The left card is `min-height: 560px` and the result card grows with its claims; `.console-grid` is `align-items: start` so the shorter input card does not stretch into a tall empty box (the Verify button sits after the note, not pinned to the bottom).
+- `preview_click` coordinates are reported in viewport space after scrolling; the button's y moves once the result panel changes height, so measure with `getBoundingClientRect()` before trusting a click point.
 
 ## 9. Benchmark snapshot (fill in P8)
 
