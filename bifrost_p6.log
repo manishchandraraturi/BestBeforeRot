@@ -1,0 +1,78 @@
+2026/11/21 19:21:05 maxprocs: Leaving GOMAXPROCS=12: CPU quota undefined
+
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║   ██████╗ ██╗███████╗██████╗  ██████╗ ███████╗████████╗   ║
+║   ██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝   ║
+║   ██████╔╝██║█████╗  ██████╔╝██║   ██║███████╗   ██║      ║
+║   ██╔══██╗██║██╔══╝  ██╔══██╗██║   ██║╚════██║   ██║      ║
+║   ██████╔╝██║██║     ██║  ██║╚██████╔╝███████║   ██║      ║
+║   ╚═════╝ ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝      ║
+║                                                           ║
+║═══════════════════════════════════════════════════════════║
+║                          v2.6.0                           ║
+║═══════════════════════════════════════════════════════════║
+║                 The Fastest LLM Gateway                   ║
+║═══════════════════════════════════════════════════════════║
+║             https://github.com/maximhq/bifrost            ║
+╚═══════════════════════════════════════════════════════════╝
+
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"config file not found at path: C:\\Users\\DELL\\AppData\\Roaming\\bifrost\\config.json, initializing with default values"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"connecting to sqlite database"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"[configstore] no pending migrations; skipping migration run"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"config store initialized (default SQLite)"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"[logstore] pending migrations"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"[logstore] migration : logs_tune_retention_autovacuum"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"[logstore] pending migrations"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"[logstore] migration : logs_tune_retention_autovacuum"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"logs store initialized"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"Per-user OAuth sweep worker started (flow=1m0s, orphan=24h0m0s, retention=720h0m0s)"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"Per-user headers sweep worker started (orphan=24h0m0s, retention=720h0m0s, expired_flow=15m0s)"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"pricing sync interval set to 24h0m0s (scheduler checks every 5m0s)"}
+{"level":"info","time":"2026-11-21T19:21:06+05:30","message":"initializing model catalog..."}
+{"level":"info","time":"2026-11-21T19:21:07+05:30","message":"existing model parameters found in database (16573 records), syncing from URL in background"}
+{"level":"info","time":"2026-11-21T19:21:08+05:30","message":"existing pricing data found in database, syncing from URL in background"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"existing MCP library data found in database, syncing from URL in background"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"initializing MCP catalog..."}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"log retention days: 365"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"log cleanup routine started"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"log retention cleaner initialized with 365 days retention"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"starting log cleanup: deleting logs older than 2025-11-21T13:51:09Z (retention: 365 days)"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"initializing logging writer settings: max_batch_size=1000 batch_interval=5s max_batch_bytes=314572800 write_queue_capacity=10000 deferred_usage_concurrency=5"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] GetVirtualKeys loaded 0 keys across 1 pages in 0s"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] loadFromDatabase GetVirtualKeys loaded 0 keys in 0s"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] loadFromDatabase rebuildInMemoryStructures took 0s"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] loadFromDatabase total took 8.6885ms"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"governance store initialized successfully"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] NewLocalGovernanceStore took 8.6885ms"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] governance_startup_reset lock acquisition took 664.7µs (acquired=true)"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] PerformStartupResets in-memory reset of 0 rate limits took 1.1294ms"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] PerformStartupResets in-memory reset of 0 budgets took 0s"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[startup-timing] PerformStartupResets took 1.1294ms"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"webhook dispatcher initialized"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"async job executor initialized"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[CODE MODE] Starlark code mode initialized with binding level: server, timeout: 30s"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[Bifrost MCP] tool manager initialized with tool execution timeout: 30s, max agent depth: 10, and code mode binding level: server"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"[Bifrost MCP] MCP Manager initialized"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"MCP integration initialized successfully"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"bifrost client initialized"}
+{"level":"info","time":"2026-11-21T19:21:09+05:30","message":"listing all models and adding to model catalog"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"models added to catalog"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"temp-token sweep worker started (interval=5m0s)"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"agent gateway initialized: 0 registered agent(s), push notifications disabled (external client URL not configured)"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"Token refresh worker started"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"request body buffer pool limit: 4194304 bytes (buffers above this are released after each request)"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"background live model refresh every 1h0m0s (jittered +/-10%)"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"Time spent in Bifrost server bootstrap 4270 ms"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: routing - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: compat - active"}
+{"level":"warn","time":"2026-11-21T19:21:10+05:30","message":"[Bifrost MCP] the Bifrost MCP spec is unavailable: the Bifrost MCP needs bifrost_url set: its tool calls address Bifrost through that URL"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: model-catalog-resolver - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: telemetry - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: prompts - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: logging - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"plugin status: governance - active"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"successfully started bifrost, serving UI on http://localhost:8080/"}
+{"level":"info","time":"2026-11-21T19:21:10+05:30","message":"skills orphan cleanup completed during startup: deleted_db_blobs=0 deleted_storage_objects=0"}
+{"level":"info","time":"2026-11-21T19:21:11+05:30","message":"MCP library sync completed: 127 entries synced from https://getbifrost.ai/mcp-library"}
+{"level":"info","http.method":"GET","http.target":"/v1/models","http.status_code":200,"http.request_duration_ms":450,"http.remote_addr":"127.0.0.1:57421","http.user_agent":"curl/8.22.0","trace_id":"8aed46fb17274833a4624391db07ece3","request_id":"6476d265-2146-4882-8f26-ada409a0ca20","time":"2026-11-21T19:21:12+05:30","message":"request completed"}

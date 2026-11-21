@@ -1,6 +1,7 @@
 """Bifrost gateway client: one chat call, with fallback routing and provider reporting."""
 
 import logging
+from contextvars import ContextVar
 
 import httpx
 from pydantic import BaseModel
@@ -34,6 +35,12 @@ class ChatResult(BaseModel):
     tokens_out: int = 0
     provider: str
     fallback_triggered: bool = False
+
+
+# Per-request instrumentation used by the pipeline (P6): the collector is inherited by every
+# claim task of one request, so stats stay per-request. Unset means no behaviour change.
+usage_sink: ContextVar[list[ChatResult] | None] = ContextVar("usage_sink", default=None)
+simulated_outage: ContextVar[bool] = ContextVar("simulated_outage", default=False)
 
 
 def _get_client() -> httpx.AsyncClient:
@@ -86,7 +93,8 @@ async def chat(
     force_fallback: bool = False,
 ) -> ChatResult:
     """Send one chat completion through Bifrost and report the provider that answered."""
-    requested = invalid_model() if force_fallback else (model or settings.PRIMARY_MODEL)
+    outage = force_fallback or simulated_outage.get()
+    requested = invalid_model() if outage else (model or settings.PRIMARY_MODEL)
     body = {
         "model": requested,
         "messages": messages,
@@ -125,7 +133,7 @@ async def chat(
         tokens_in=int(usage.get("prompt_tokens") or 0),
         tokens_out=int(usage.get("completion_tokens") or 0),
         provider=provider or "unknown",
-        fallback_triggered=fallback_triggered or force_fallback,
+        fallback_triggered=fallback_triggered or outage,
     )
     logger.info(
         "bifrost chat model=%s provider=%s fallback=%s tokens_in=%d tokens_out=%d",
@@ -135,4 +143,7 @@ async def chat(
         result.tokens_in,
         result.tokens_out,
     )
+    sink = usage_sink.get()
+    if sink is not None:
+        sink.append(result)
     return result

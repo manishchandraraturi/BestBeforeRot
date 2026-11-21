@@ -9,7 +9,7 @@ from pathlib import Path
 from app.config import settings
 from app.models import ClaimStatus
 from app.pipeline import verify
-from app.services import bifrost_client, claims, judge, scoring, tavily_client
+from app.services import bifrost_client, claims, judge, tavily_client
 
 # The Windows console defaults to cp1252; model text can contain any character.
 if hasattr(sys.stdout, "reconfigure"):
@@ -50,12 +50,28 @@ async def main() -> int:
         await bifrost_client.aclose()
     elapsed_ms = (time.perf_counter() - started) * 1000
 
-    overall, band = scoring.score_claims(result)
-    print(f"CLAIMS: {len(result)}  elapsed_ms={elapsed_ms:.0f}")
-    for claim in result:
+    stats = result.stats
+    print(f"CLAIMS: {len(result.claims)}  elapsed_ms={elapsed_ms:.0f}")
+    print(
+        "STATS: cache_hits={} searched={} stable={} credits_used={} credits_saved={} "
+        "llm_calls={} tokens={}/{} providers={} fallback={}".format(
+            stats.cache_hits,
+            stats.claims_searched,
+            stats.claims_skipped_stable,
+            stats.tavily_credits_used,
+            stats.tavily_credits_saved,
+            stats.llm_calls,
+            stats.tokens_in,
+            stats.tokens_out,
+            ",".join(stats.providers_used) or "-",
+            stats.fallback_triggered,
+        )
+    )
+    print(f"LATENCY: {stats.latency_ms} ms")
+    for claim in result.claims:
         print(f"[{claim.id}] type={claim.type} volatility={claim.volatility} ttl_days={claim.ttl_days}")
         print(f"    text: {claim.text!r}")
-        print(f"    status={claim.status} verdict={claim.verdict}")
+        print(f"    status={claim.status} verdict={claim.verdict} from_cache={claim.from_cache}")
         print(f"    confidence={claim.confidence} score={claim.score}")
         print(f"    reason: {claim.reason!r}")
         if claim.corrected_text:
@@ -66,7 +82,8 @@ async def main() -> int:
             print(f"    source: {source.title} | {source.url} | published={source.published}")
 
     print("")
-    print(f"OVERALL SCORE: {overall} ({band})")
+    print(f"CORRECTED ANSWER: {result.corrected_answer}")
+    print(f"OVERALL SCORE: {result.overall_score} ({result.overall_band})")
     return 0
 
 

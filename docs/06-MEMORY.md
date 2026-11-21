@@ -35,7 +35,7 @@
 | P3 | Tavily client | DONE (tests passed) | 2026-11-20 | 7 mocked tests; 2a live (5 results, 2 493 ms), 2b cache hit (1 ms, no API call) |
 | P4 | Claim extraction | DONE (tests passed) | 2026-11-20 | 10 mocked tests; live run extracted 3/3 claims with pricing→1d, leadership→30d, stable→None |
 | P5 | Verify pipeline | DONE (tests passed) | 2026-11-20 | 27 tests; live: stale $5 → stale + 4 real sources → corrected $10, stable skipped, overall 58 mixed; bad key → unverifiable, exit 0 |
-| P6 | Cache + endpoints | TODO | | |
+| P6 | Cache + rewrite + stats + endpoints | DONE (tests passed) | 2026-11-21 | 11 cache/rewrite tests, 74 total; cold 7 386 ms `cache_hits=0` → warm 718 ms `cache_hits=1`, `tavily_credits_used=0` → fallback `fallback_triggered=true` on gemini; all HTTP 200 |
 | P7a | UI shell | TODO | | |
 | P7b | UI console | TODO | | |
 | P7c | UI results polish | TODO | | |
@@ -177,6 +177,13 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 19 | A crashed claim gets `status=error`, `verdict=unverifiable`, `reason="error"`, score 40 | matches 03-RULES §D and the P5 spec; the exception type/message goes to the log only | P5 |
 | 20 | The `MAX_PARALLEL` semaphore wraps search **and** judge together | §4 says the claim step is capped at 4 at once; capping only the search still floods the LLM | P5 |
 | 21 | Judge-cited urls are filtered against the evidence before becoming `Source` | 03-RULES §C.4/§C.5: the judge may only cite what Tavily returned, so code enforces it | P5 |
+| 22 | The fact cache stores the whole judged `Claim` (`model_dump_json`) under `sha1(normalised text)` | a hit can restore verdict, correction, reason, confidence, sources and `expires_at` without a second Tavily or LLM call (§8) | P6 |
+| 23 | A cache hit copies the archived verdict onto today's claim and sets `from_cache=True`; the claim keeps its own id, text and `ttl_days` | the response shape stays the same on cold and warm runs, so the UI needs no branch | P6 |
+| 24 | Per-request stats come from two additive `ContextVar`s in `bifrost_client` (`usage_sink`, `simulated_outage`) | `pipeline.verify` needs the real `ChatResult`s (tokens/providers/fallback) and a way to force the fallback without changing the frozen `chat()` signature. **This edit is outside the P6 file list** and is additive only: unset means the old behaviour | P6 |
+| 25 | `tavily_credits_used = claims_searched`, `credits_saved = cache_hits + claims_skipped_stable` | one basic search = one credit; the two ways of not searching are both savings (§5 stats strip) | P6 |
+| 26 | `POST /api/ask` is included, with `AskRequest {question}` and `ASK_SYSTEM` local to `main.py` | 05-TASKS P6 do-list and 02-ARCHITECTURE §5 both list it, but `prompts.py` is frozen until P8, so the prompt cannot live there | P6 |
+| 27 | Cache SQLite calls retry a locked DB 3× (0.05 s) with a 1.0 s busy timeout; any other `sqlite3.Error` only logs and the request runs uncached | 03-RULES §D: bounded retry, never a failure the user sees | P6 |
+| 28 | Row expiry is compared as ISO-8601 UTC strings (`expires_at > now.isoformat()`), the same rule as the search cache | one timestamp format in one DB file; no timezone mixups on a Windows host | P6 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -207,6 +214,18 @@ python -m scripts.try_pipeline samples/pricing.txt           # 3 claims, 8 624 m
 # 2c bad key WITHOUT touching .env (env var beats .env, throwaway cache DB forces a live call)
 TAVILY_API_KEY=bad-key CACHE_DB=ttl_cache_badkey.db python -m scripts.try_pipeline samples/pricing.txt  # both claims unverifiable, exit 0
 rm -f ttl_cache_badkey.db
+# P6 gate (verified 2026-11-21, all exit 0)
+pytest tests/test_cache.py -q                                   # 11 passed
+pytest -q                                                      # 74 passed (P1–P6)
+python -m uvicorn app.main:app --port 8000                     # 127.0.0.1:8000
+curl -X POST http://127.0.0.1:8000/api/verify -H "Content-Type: application/json" -d "{\"answer\":\"The Notion Plus plan costs $5 per month.\"}"
+#   cold: HTTP 200, cache_hits=0, tavily_credits_used=1, llm_calls=2, latency_ms=7386, corrected "…$10 per month."
+#   same curl again (warm): HTTP 200, cache_hits=1, tavily_credits_used=0, latency_ms=718, claims[0].from_cache=true
+curl -X POST http://127.0.0.1:8000/api/verify -H "Content-Type: application/json" -d "{\"answer\":\"The Notion Plus plan costs $5 per month.\",\"force_fallback\":true,\"use_cache\":false}"
+#   fallback: HTTP 200, fallback_triggered=true, providers_used=["gemini"], latency_ms=6221
+curl http://127.0.0.1:8000/api/cache       # {"count":1,"facts":[{… "seconds_left":86399}]}
+curl http://127.0.0.1:8000/api/samples     # 3 samples: pricing / version / leadership
+curl -X DELETE http://127.0.0.1:8000/api/cache   # {"deleted":n}  (route exists; not exercised in the gate — do not clear the demo cache mid-run)
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -247,6 +266,13 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - Tavily `basic` still returns no `published_date`, so every `Source.published` in a live run is `None`. The judge is told the evidence has no dates and still judged correctly (stale $5 → $10), so this is cosmetic for the demo; only `topic: "news"`/`time_range` would fix it, which the frozen search body forbids.
 - Free-tier latency: `samples/pricing.txt` cold took 8 624 ms for 3 claims (2 searched, 1 skipped) — inside the PRD's <20 s budget but with little room if the gemini fallback hop triggers.
 - `tests/test_scoring.py` first asserted 68 for the fast/slow mean; the correct value is 65 ((99*1.5+15)/2.5). Recompute by hand before "fixing" the code when a weighted-mean test fails.
+- **On this Windows host `curl http://localhost:8000/...` did not connect** while uvicorn listened on `127.0.0.1:8000` (no `::1` listener; `localhost` resolved to the IPv6 loopback). Every gate command here uses `127.0.0.1`; run `uvicorn ... --host 0.0.0.0` instead only if a second machine must reach it.
+- A warm run still shows `llm_calls=1`, not 0: extraction always runs (the answer must be re-parsed). The fact cache skips only the per-claim Tavily search **and** the judge call, which is why the warm latency was 718 ms instead of 7 386 ms and `tavily_credits_used=0`.
+- A cached correction is frozen until its row expires (1 day for pricing), so re-running the demo minutes later keeps yesterday's wording. `DELETE /api/cache` is the demo reset; expiry is not deleted from the table, it is just filtered out by `get_fact` and `GET /api/cache`.
+- `/api/verify` needs Bifrost up. With the gateway down the route answers `503 {"error":"Bifrost unreachable at http://localhost:8080"}` (every other upstream failure is 502) — `curl` without showing the body would hide that body entirely.
+- `_apply_cached` copies the archived `expires_at` onto today's claim, so the warm response shows the original expiry (2026-11-22), not `now + ttl`; that is what makes `seconds_left` in `GET /api/cache` match the row.
+- `tests/test_cache.py` and `tests/test_pipeline_mocked.py` point `settings.CACHE_DB` at a `tmp_path` file per test; without that the developer's real `ttl_cache.db` would serve across tests and a warm hit would break the cold-run assertions.
+- The `bifrost_client` `ContextVar`s are set and reset in a `finally` inside `verify()`; a task created outside `verify()` (a future P7 background job) sees the default `None` sink and counts nothing.
 
 ## 9. Benchmark snapshot (fill in P8)
 

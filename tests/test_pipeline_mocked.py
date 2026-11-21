@@ -37,9 +37,10 @@ def _evidence(count: int = 2) -> list[Evidence]:
 
 
 @pytest.fixture(autouse=True)
-def isolated(monkeypatch):
-    """Deterministic settings and clean module state for every test."""
+def isolated(tmp_path, monkeypatch):
+    """Deterministic settings, a private facts DB and clean module state for every test."""
     monkeypatch.setattr(settings, "MAX_PARALLEL", 4)
+    monkeypatch.setattr(settings, "CACHE_DB", str(tmp_path / "facts.db"))
     monkeypatch.setattr(pipeline.claims_service, "last_queries", {})
     yield
 
@@ -105,7 +106,7 @@ async def test_stable_claim_is_skipped_without_a_search(monkeypatch) -> None:
     queries = _install_search(monkeypatch, lambda query: _as_list(_evidence()))
     _install_judge(monkeypatch, _fresh)
 
-    result = await pipeline.verify("answer text")
+    result = (await pipeline.verify("answer text")).claims
 
     assert queries == ["Notion Plus price 2026"]
     stable = result[1]
@@ -122,7 +123,7 @@ async def test_verdict_sources_and_score_are_attached(monkeypatch) -> None:
     _install_search(monkeypatch, lambda query: _as_list(_evidence()))
     _install_judge(monkeypatch, _fresh)
 
-    claims = await pipeline.verify("answer text")
+    claims = (await pipeline.verify("answer text")).claims
 
     claim = claims[0]
     assert claim.status is ClaimStatus.CHECKED
@@ -176,7 +177,7 @@ async def test_search_error_isolates_one_claim(monkeypatch) -> None:
     _install_search(monkeypatch, handler)
     _install_judge(monkeypatch, _fresh)
 
-    claims = await pipeline.verify("answer text")
+    claims = (await pipeline.verify("answer text")).claims
 
     failed, ok = claims
     assert failed.status is ClaimStatus.ERROR
@@ -208,7 +209,7 @@ async def test_judge_parse_error_isolates_one_claim(monkeypatch) -> None:
 
     _install_judge(monkeypatch, handler)
 
-    claims = await pipeline.verify("answer text")
+    claims = (await pipeline.verify("answer text")).claims
 
     assert claims[0].status is ClaimStatus.ERROR
     assert claims[0].verdict is Verdict.UNVERIFIABLE
@@ -234,7 +235,7 @@ async def test_max_parallel_bounds_concurrent_claims(monkeypatch) -> None:
     _install_search(monkeypatch, handler)
     _install_judge(monkeypatch, _fresh)
 
-    claims = await pipeline.verify("answer text")
+    claims = (await pipeline.verify("answer text")).claims
 
     assert state["peak"] == 2
     assert len(claims) == 5
@@ -247,7 +248,7 @@ async def test_no_claims_returns_early_without_searching(monkeypatch) -> None:
     queries = _install_search(monkeypatch, lambda query: _as_list(_evidence()))
     _install_judge(monkeypatch, _fresh)
 
-    assert await pipeline.verify("answer text") == []
+    assert (await pipeline.verify("answer text")).claims == []
     assert queries == []
 
 

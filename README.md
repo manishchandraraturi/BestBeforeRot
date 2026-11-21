@@ -1,209 +1,144 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:ff6b35,100:7a1f1f&height=220&section=header&text=BestBeforeRot&fontSize=64&fontColor=ffffff&animation=fadeIn&fontAlignY=36&desc=Every%20fact%20has%20an%20expiry%20date.&descSize=20&descAlignY=58" alt="BestBeforeRot banner" />
+<img src="assets/hero.svg" alt="BestBeforeRot" width="100%" />
 
-### AI answers go stale. This finds the rotten bits.
+<br/>
 
-<p>
-  <img src="https://img.shields.io/badge/status-in%20development-ff6b35?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/search-Tavily-6c5ce7?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/gateway-Bifrost-111827?style=for-the-badge" />
-</p>
+<img src="https://img.shields.io/badge/status-in%20development-ff6b35?style=for-the-badge" />
+<img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+<img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+<img src="https://img.shields.io/badge/search-Tavily-6c5ce7?style=for-the-badge" />
+<img src="https://img.shields.io/badge/gateway-Bifrost-2b2118?style=for-the-badge" />
 
-<p>
-  <a href="#-the-problem">Problem</a> ·
-  <a href="#-how-it-works">How it works</a> ·
-  <a href="#-the-expiry-table">Expiry table</a> ·
-  <a href="#-the-freshness-score">Score</a> ·
-  <a href="#-architecture">Architecture</a> ·
-  <a href="#-run-it">Run it</a> ·
-  <a href="#-roadmap">Roadmap</a>
-</p>
+<br/><br/>
+
+**An AI says "Notion Plus costs $5 a month." Is that still true today?**<br/>
+BestBeforeRot reads any AI answer, finds the claims that can go bad, and checks them against the live web.
 
 </div>
 
----
+<br/>
 
-## 🧂 The problem
+## The problem
 
-You ask an AI: *"How much is Notion Plus?"*
+Language models learn once, then keep answering for years. Prices change. Versions ship. CEOs leave. The answer still sounds just as sure.
 
-It answers fast and sounds sure. But its knowledge is frozen in the past.
+<img src="assets/example.svg" alt="A stale price caught by BestBeforeRot" width="100%" />
 
-```text
-AI says   →  "Notion Plus costs $5 per month."          ← sounded sure
-Reality   →  Notion Plus is $10 per seat / month.        ← checked live
-Verdict   →  🔴 STALE  (pricing facts expire in 1 day)
-```
+Nothing in a normal AI answer tells you which sentences are risky. This project adds that missing label.
 
-Nobody marks which sentences in an answer are risky. **BestBeforeRot does.**
+Think of food. Milk spoils in days. Salt lasts for years. Facts behave the same way, so every claim gets its own **best before** date.
 
-> Think of it like a food label. Milk spoils in days. Salt lasts years.
-> Facts work the same way. A price spoils fast. "The Eiffel Tower is in Paris" never does.
+<br/>
 
----
+## How it works
 
-## 🔬 How it works
+<img src="assets/flow.svg" alt="How BestBeforeRot works" width="100%" />
 
-Paste any AI answer. The engine does five things:
+1. **Split.** An LLM breaks the answer into small, checkable claims.
+2. **Label.** Each claim gets a type (pricing, version, law...) and an expiry time.
+3. **Skip.** Stable facts are never searched. They do not rot.
+4. **Check.** Fast-rotting claims are searched live, and a judge compares them with fresh evidence.
+5. **Score.** You get a verdict per claim, real source links and one overall score.
 
-| # | Step | What happens |
-|---|------|--------------|
-| 1 | **Split** | An LLM breaks the answer into small, checkable claims |
-| 2 | **Label** | Each claim gets a type (pricing, version, law...) and an expiry time |
-| 3 | **Skip** | Stable facts are not searched. They don't rot. |
-| 4 | **Check** | Fast-rotting claims are searched live and judged against fresh evidence |
-| 5 | **Score** | You get a freshness score, a verdict per claim and real source links |
+<br/>
 
-```mermaid
-flowchart LR
-    A[📝 AI answer] --> B[✂️ Extract claims]
-    B --> C{Does it rot?}
-    C -- stable --> D[✅ Skip, never expires]
-    C -- volatile --> E[🔎 Live web search]
-    E --> F[⚖️ LLM judge]
-    F --> G[📊 Score + verdicts + sources]
-    D --> G
-```
+## The expiry table
 
----
+This is the core idea. Different facts rot at different speeds.
 
-## ⏳ The expiry table
+<div align="center">
+<img src="assets/expiry.svg" alt="Expiry facts label" width="80%" />
+</div>
 
-Each claim type has a time-to-live (TTL). This is the core idea of the project.
+<br/>
 
-| Claim type | Example | Expires after | Speed |
-|------------|---------|:-------------:|:-----:|
-| 💸 `pricing` | "Plus plan costs $10/month" | **1 day** | 🔥 fast |
-| 🏷️ `version` | "Latest release is v4.2" | **7 days** | 🔥 fast |
-| 👔 `leadership` | "The CEO is Sam Altman" | **30 days** | 🐢 slow |
-| ⚖️ `law` | "This rule is in force" | **30 days** | 🐢 slow |
-| 🎲 `other` | anything else that can change | **7 days** | 🐢 slow |
-| 🗿 `stable` | "The Eiffel Tower is in Paris" | **never** | ♾️ none |
+## The freshness score
 
-All TTLs live in one file (`app/ttl.py`). One source of truth.
+<img src="assets/score.svg" alt="Freshness score" width="100%" />
 
----
+If search fails for a claim, it becomes `unverifiable`. The whole request never crashes.
 
-## 📊 The freshness score
+<br/>
 
-Every checked claim gets a verdict. The verdicts combine into one score from 0 to 100.
+## Architecture
 
-| Verdict | Points |
-|---------|--------|
-| 🟢 **fresh** | `80 + 10 × confidence`, plus 10 if 2 or more independent sources agree |
-| 🔴 **stale** | `15` |
-| ⚪ **unverifiable** | `40` |
+<img src="assets/architecture.svg" alt="Architecture" width="100%" />
 
-Fast-rotting claims count **1.5×**. Slow ones count **1.0×**. Stable claims are ignored.
+Why it is built this way:
 
-```text
- 0 ───────────── 49 │ 50 ──────── 79 │ 80 ─────────── 100
-        🔴 RISKY          🟡 MIXED            🟢 FRESH
-```
+- **Bifrost gateway.** One door to every model. If the primary model fails, it switches to the fallback by itself.
+- **SQLite cache.** Search results are kept for 6 hours. In a real test run, the repeat search took 1 ms instead of about 2.5 s.
+- **Frozen contracts.** Every data shape is a Pydantic model. No loose dictionaries.
+- **Small files.** One job per file, so everything is easy to read and test.
 
-If search fails, the claim becomes `unverifiable`. The request never crashes.
+<br/>
 
----
-
-## 🏗️ Architecture
-
-```mermaid
-flowchart TB
-    UI[🌐 Web UI] --> API[⚡ FastAPI]
-    API --> P[🧠 Pipeline]
-    P --> CL[Claim extractor]
-    P --> TV[🔎 Tavily client]
-    P --> JD[⚖️ Judge]
-    CL --> BF
-    JD --> BF
-    TV --> TAV[(Tavily Search API)]
-    TV <--> DB[(SQLite cache)]
-    BF[🚪 Bifrost gateway] --> G[Groq: primary]
-    BF -. automatic fallback .-> GE[Gemini: backup]
-```
-
-**Why it's built this way**
-
-- 🚪 **Bifrost gateway.** One door to all models. If the primary model fails, Bifrost switches to the fallback by itself.
-- 🗃️ **SQLite cache.** Search results are cached for 6 hours. The second identical search took **1 ms** instead of about 2.5 s in our test run.
-- 🔒 **Frozen contracts.** All data shapes are Pydantic models. No loose dicts.
-- 🧱 **Small files, one job each.** Easy to read, easy to test.
-
----
-
-## 🧰 Tech stack
+## Tech stack
 
 | Layer | Tool |
 |-------|------|
-| API | FastAPI + Uvicorn |
+| API | FastAPI, Uvicorn |
 | Data models | Pydantic v2 |
 | LLM gateway | Bifrost |
 | Primary model | Groq `gpt-oss-120b` |
 | Fallback model | Gemini `3.5-flash-lite` |
 | Web search | Tavily |
 | Cache | SQLite |
-| Tests | pytest, respx (HTTP mocks) |
+| Tests | pytest, respx |
 
----
+<br/>
 
-## 📁 Project layout
+## Project layout
 
 ```text
 BestBeforeRot/
 ├── app/
-│   ├── main.py              # FastAPI app + /api/health
-│   ├── config.py            # settings from .env
-│   ├── models.py            # frozen Pydantic contracts
-│   ├── ttl.py               # the expiry table
-│   ├── prompts.py           # claim + judge prompts
-│   ├── pipeline.py          # the full verify flow
+│   ├── main.py            FastAPI app and /api/health
+│   ├── config.py          settings from .env
+│   ├── models.py          frozen Pydantic contracts
+│   ├── ttl.py             the expiry table
+│   ├── prompts.py         claim and judge prompts
+│   ├── pipeline.py        the full verify flow
 │   └── services/
 │       ├── bifrost_client.py
 │       ├── tavily_client.py
 │       ├── claims.py
 │       ├── judge.py
 │       └── scoring.py
-├── web/                     # frontend
-├── scripts/                 # small CLI runners for each phase
-├── tests/                   # unit tests
-└── docs/                    # PRD, architecture, rules, design, tasks, memory
+├── web/                   frontend
+├── scripts/               small CLI runner for each phase
+├── tests/                 unit tests
+├── assets/                README art
+└── docs/                  PRD, architecture, rules, design, tasks, memory
 ```
 
----
+<br/>
 
-## 🚀 Run it
+## Run it
 
-**You need:** Python 3.10+, Node.js (for Bifrost), a free [Groq](https://console.groq.com/keys) key, a free [Gemini](https://aistudio.google.com/app/apikey) key and a free [Tavily](https://tavily.com) key.
+You need Python 3.10+, Node.js (for Bifrost) and free keys for [Groq](https://console.groq.com/keys), [Gemini](https://aistudio.google.com/app/apikey) and [Tavily](https://tavily.com).
 
 ```bash
-# 1. clone
 git clone https://github.com/manishchandraraturi/BestBeforeRot.git
 cd BestBeforeRot
-
-# 2. install
 pip install -r requirements.txt
 
-# 3. config
-cp .env.example .env        # then fill in your models and TAVILY_API_KEY
+cp .env.example .env          # fill in your models and TAVILY_API_KEY
 
-# 4. start the gateway (new terminal), then add Groq + Gemini keys at http://localhost:8080
-npx -y @maximhq/bifrost
+npx -y @maximhq/bifrost       # new terminal, then add Groq and Gemini keys at localhost:8080
 
-# 5. start the app
 uvicorn app.main:app --port 8000
 ```
 
-Check it's alive:
+Check that it is alive:
 
 ```bash
 curl localhost:8000/api/health
 # {"ok":true,"bifrost":true,"tavily_key_set":true}
 ```
 
-Try the pieces on their own:
+Try each piece on its own:
 
 ```bash
 python -m scripts.try_bifrost "Say hello"
@@ -213,7 +148,9 @@ pytest -q
 ```
 
 <details>
-<summary><b>⚙️ Environment variables</b></summary>
+<summary><b>Environment variables</b></summary>
+
+<br/>
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
@@ -227,43 +164,32 @@ pytest -q
 | `REQUEST_TIMEOUT_S` | `25` | Per-request timeout |
 | `CACHE_DB` | `ttl_cache.db` | SQLite file |
 
-Never commit `.env`. It's already in `.gitignore`.
+Never commit `.env`. It is already in `.gitignore`.
 
 </details>
 
----
+<br/>
 
-## 🗺️ Roadmap
+## Roadmap
 
-Built one phase at a time. Each phase has a test gate that must pass.
+Built one phase at a time. Every phase has a test gate that must pass before the next one starts.
 
-| Phase | What | Status |
-|:-----:|------|:------:|
-| P0 | Repo, docs, config | ✅ Done |
-| P1 | Skeleton, models, TTL table, health endpoint | ✅ Done |
-| P2 | Bifrost client with automatic fallback | ✅ Done |
-| P3 | Tavily client with 6-hour cache | ✅ Done |
-| P4 | Claim extraction | ✅ Done |
-| P5 | Verify pipeline: search + judge + score | 🔨 Building |
-| P6 | Verify API endpoint + full cache | ⏳ Next |
-| P7+ | Web UI, corrected-answer rewrite, polish | ⏳ Planned |
+<img src="assets/roadmap.svg" alt="Project roadmap" width="100%" />
 
----
+<br/>
 
-## 🧪 Honest limits
+## Honest limits
 
-- Tavily's basic search returns **no publish dates**, so the judge works from content, not dates.
-- Free model tiers can be slow. The fallback hop took about 6 to 7 s in our tests.
-- A verdict is only as good as the evidence found. A bad search gives an `unverifiable` result, never a made-up one.
+- Tavily basic search returns no publish dates, so the judge works from page content, not dates.
+- Free model tiers can be slow. The fallback hop took about 6 to 7 seconds in testing.
+- A verdict is only as good as the evidence found. If search fails, you get `unverifiable`, never a made-up answer.
 
----
+<br/>
 
 <div align="center">
 
-**Built by [Manish Chandra Raturi](https://github.com/manishchandraraturi)**
+Built by [Manish Chandra Raturi](https://github.com/manishchandraraturi)
 
-*Because "sounds right" is not the same as "is still right."*
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7a1f1f,100:ff6b35&height=100&section=footer" alt="footer" />
+*"Sounds right" is not the same as "is still right."*
 
 </div>
