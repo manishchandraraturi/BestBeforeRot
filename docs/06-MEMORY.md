@@ -36,7 +36,7 @@
 | P4 | Claim extraction | DONE (tests passed) | 2026-11-20 | 10 mocked tests; live run extracted 3/3 claims with pricing→1d, leadership→30d, stable→None |
 | P5 | Verify pipeline | DONE (tests passed) | 2026-11-20 | 27 tests; live: stale $5 → stale + 4 real sources → corrected $10, stable skipped, overall 58 mixed; bad key → unverifiable, exit 0 |
 | P6 | Cache + rewrite + stats + endpoints | DONE (tests passed) | 2026-11-21 | 11 cache/rewrite tests, 74 total; cold 7 386 ms `cache_hits=0` → warm 718 ms `cache_hits=1`, `tavily_credits_used=0` → fallback `fallback_triggered=true` on gemini; all HTTP 200 |
-| P7a | UI shell | TODO | | |
+| P7a | UI shell | DONE (tests passed) | 2026-11-21 | `web/index.html` rewritten, `web/styles.css` new, `web/app.js` created empty; fonts 200 from Google, 0 console errors, no horizontal scroll at 1440 or 375 |
 | P7b | UI console | TODO | | |
 | P7c | UI results polish | TODO | | |
 | P8 | Benchmark | TODO | | |
@@ -184,6 +184,9 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 26 | `POST /api/ask` is included, with `AskRequest {question}` and `ASK_SYSTEM` local to `main.py` | 05-TASKS P6 do-list and 02-ARCHITECTURE §5 both list it, but `prompts.py` is frozen until P8, so the prompt cannot live there | P6 |
 | 27 | Cache SQLite calls retry a locked DB 3× (0.05 s) with a 1.0 s busy timeout; any other `sqlite3.Error` only logs and the request runs uncached | 03-RULES §D: bounded retry, never a failure the user sees | P6 |
 | 28 | Row expiry is compared as ISO-8601 UTC strings (`expires_at > now.isoformat()`), the same rule as the search cache | one timestamp format in one DB file; no timezone mixups on a Windows host | P6 |
+| 29 | The UI brand is **BestBeforeRot** (nav, `<title>`, footer wordmark), not the `FactTTL` name used inside the docs | the repo, README and assets already say BestBeforeRot; the P7a prompt names the footer wordmark explicitly | P7a |
+| 30 | All P7a motion is CSS-only (hero word reveal, doodle draw + float, marquee); `app.js` ships empty | the phase must not add JS; scroll-reveal, count-up and the tab logic are P7b/P7c | P7a |
+| 31 | The nav keeps only `Try it · How it works · GitHub` and the Results section is not built yet | 04-DESIGN lists a Results link, but the section is P7c work — a dead anchor is worse than one missing link | P7a |
 
 ## 6. Working commands (add as they are proven)
 
@@ -226,6 +229,11 @@ curl -X POST http://127.0.0.1:8000/api/verify -H "Content-Type: application/json
 curl http://127.0.0.1:8000/api/cache       # {"count":1,"facts":[{… "seconds_left":86399}]}
 curl http://127.0.0.1:8000/api/samples     # 3 samples: pricing / version / leadership
 curl -X DELETE http://127.0.0.1:8000/api/cache   # {"deleted":n}  (route exists; not exercised in the gate — do not clear the demo cache mid-run)
+# P7a gate (verified 2026-11-21, all exit 0)
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/          # 200
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/styles.css # 200
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/app.js     # 200
+# then in the browser: 1440x900 and 375x812, console empty, fonts.gstatic 200 for all three families
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -273,6 +281,11 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - `_apply_cached` copies the archived `expires_at` onto today's claim, so the warm response shows the original expiry (2026-11-22), not `now + ttl`; that is what makes `seconds_left` in `GET /api/cache` match the row.
 - `tests/test_cache.py` and `tests/test_pipeline_mocked.py` point `settings.CACHE_DB` at a `tmp_path` file per test; without that the developer's real `ttl_cache.db` would serve across tests and a warm hit would break the cold-run assertions.
 - The `bifrost_client` `ContextVar`s are set and reset in a `finally` inside `verify()`; a task created outside `verify()` (a future P7 background job) sees the default `None` sink and counts nothing.
+- P7a hero: the headline is split into two `.line` wrappers with `white-space: nowrap`, so the font size (`clamp(2.75rem, 7vw, 6.25rem)`) must stay small enough for "Every fact has" to fit the left grid column. Raising it re-breaks the design into 3–4 lines at 1440px.
+- The hero is `calc(100svh - 92px)`, not `100svh`: the sticky nav is in normal flow, so a full-viewport hero pushes the fact-type marquee past the fold (verified by measuring `marquee.bottom` = 877 < 900).
+- The footer wordmark is sized by measurement, not by eye: the outline text is 6.45 × the font size wide, so at 375px anything above ~12.6vw overflows the 318px content box (`scrollWidth` 327 vs 318 at 13.5vw).
+- Doodles are absolutely positioned inside `.doodles`; on ≤640px only the ring and one sparkle stay visible, otherwise the browser/clock/magnifier sit on top of the headline and hurt legibility.
+- `preview_screenshot` on this host returns blank frames while the page is scrolled and the Freebuff window is minimised/covered (the `.hero` paints, later sections do not). Layout was verified with `preview_evaluate` rects in that case, not screenshots.
 
 ## 9. Benchmark snapshot (fill in P8)
 

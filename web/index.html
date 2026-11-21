@@ -3,26 +3,211 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FactTTL — skeleton</title>
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-content: center;
-      gap: 12px;
-      background: #0a0a0a;
-      color: #fafafa;
-      font-family: system-ui, sans-serif;
-      text-align: center;
-    }
-    h1 { margin: 0; font-size: 2rem; font-weight: 500; letter-spacing: -0.02em; }
-    p { margin: 0; color: #a3a3a3; }
-  </style>
+  <title>BestBeforeRot — Every fact has an expiry date.</title>
+  <meta name="description" content="AI answers go stale. BestBeforeRot finds the claims that expired, checks them on the live web, and fixes them.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fafafa' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M12 2c.7 4.8 2.5 6.6 7.3 7.3-4.8.7-6.6 2.5-7.3 7.3-.7-4.8-2.5-6.6-7.3-7.3C9.5 8.6 11.3 6.8 12 2Z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h1>FactTTL — skeleton</h1>
-  <p>Every fact has an expiry date.</p>
+
+  <!-- ── NAV ─────────────────────────────────────────────────────────── -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="#top">BestBeforeRot <span class="logo-star" aria-hidden="true">✦</span></a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#try">Try it</a>
+        <a href="#how">How it works</a>
+        <a class="nav-pill" href="#github">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ── HERO ──────────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-inner">
+
+        <div class="hero-copy">
+          <p class="label hero-label">GLOBAL AI HACKATHON · STALE-ANSWER DETECTOR</p>
+
+          <h1 class="hero-title">
+            <span class="line"><span class="word" style="--i:0">Every</span> <span class="word" style="--i:1">fact</span> <span class="word" style="--i:2">has</span></span>
+            <span class="line"><span class="word" style="--i:3">an</span> <span class="word word-serif" style="--i:4">expiry date.</span></span>
+          </h1>
+
+          <p class="hero-sub">AI answers go stale. BestBeforeRot finds the claims that expired, checks them on the live web, and fixes them.</p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#try">Try it <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn btn-outline" href="#how">See how it works</a>
+          </div>
+        </div>
+
+        <!-- doodle cluster -->
+        <div class="doodles" aria-hidden="true">
+          <div class="doodle doodle-ring">
+            <svg viewBox="0 0 320 320" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="160" cy="160" r="150" class="draw" style="stroke-dasharray:943;--len:943"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-window" style="--delay:0s;--dur:8s">
+            <svg viewBox="0 0 140 100" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect class="draw" x="1" y="1" width="138" height="98" rx="10" style="stroke-dasharray:480;--len:480"/>
+              <path class="draw" d="M1 27h138" style="stroke-dasharray:140;--len:140;animation-delay:.35s"/>
+              <circle cx="15" cy="14" r="2.5" fill="currentColor" stroke="none"/>
+              <circle cx="25" cy="14" r="2.5" fill="currentColor" stroke="none"/>
+              <circle cx="35" cy="14" r="2.5" fill="currentColor" stroke="none"/>
+              <path class="draw" d="M18 45h64M18 60h96M18 75h48" style="stroke-dasharray:220;--len:220;animation-delay:.5s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-clock" style="--delay:1.4s;--dur:9s">
+            <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle class="draw" cx="48" cy="48" r="34" style="stroke-dasharray:214;--len:214;animation-delay:.2s"/>
+              <path class="draw" d="M48 30v19l12 8" style="stroke-dasharray:50;--len:50;animation-delay:.8s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-glass" style="--delay:.7s;--dur:7.5s">
+            <svg viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle class="draw" cx="41" cy="41" r="24" style="stroke-dasharray:152;--len:152;animation-delay:.3s"/>
+              <path class="draw" d="M59 59 80 80" style="stroke-dasharray:32;--len:32;animation-delay:.9s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-sparkle" style="--delay:2s;--dur:6.5s">
+            <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path class="draw" d="M20 2c1 11 6 16 17 17-11 1-16 6-17 17-1-11-6-16-17-17C14 18 19 13 20 2Z" style="stroke-dasharray:76;--len:76;animation-delay:.6s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-sparkle2" style="--delay:3s;--dur:7s">
+            <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path class="draw" d="M20 2c1 11 6 16 17 17-11 1-16 6-17 17-1-11-6-16-17-17C14 18 19 13 20 2Z" style="stroke-dasharray:76;--len:76;animation-delay:1s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-connector">
+            <svg viewBox="0 0 220 160" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M6 120C48 120 60 44 116 44M120 74c40 0 46 42 92 42" stroke-dasharray="4 7" opacity=".7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- marquee -->
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track">
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+          <span>PRICES ✦ API VERSIONS ✦ LAWS ✦ LEADERSHIP ✦ PLANS ✦ LIMITS ✦</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CONSOLE ───────────────────────────────────────────────────── -->
+    <section class="section console" id="try">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="label">01 · THE CONSOLE</p>
+          <h2 class="section-title">Try it on a real answer.</h2>
+        </div>
+
+        <div class="console-grid">
+          <div class="panel" aria-hidden="true">
+            <span class="panel-tag">INPUT</span>
+          </div>
+          <div class="panel" aria-hidden="true">
+            <span class="panel-tag">RESULT</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ──────────────────────────────────────────────── -->
+    <section class="section how" id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="label">02 · HOW IT WORKS</p>
+          <h2 class="section-title">Split. Flag. Verify. Fix.</h2>
+        </div>
+
+        <div class="steps">
+          <span class="steps-line" aria-hidden="true"></span>
+
+          <article class="step">
+            <p class="step-num">01</p>
+            <h3 class="step-title">Split</h3>
+            <p class="step-body">Any answer becomes small, checkable claims.</p>
+            <svg class="step-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="6" y="7" width="36" height="34" rx="4"/>
+              <path d="M13 18h22M13 25h22M13 32h13"/>
+            </svg>
+          </article>
+
+          <article class="step">
+            <p class="step-num">02</p>
+            <h3 class="step-title">Flag</h3>
+            <p class="step-body">Each claim gets a type and a best-before date.</p>
+            <svg class="step-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 42V8c10-6 20 6 20 6s-10 12-20 6"/>
+            </svg>
+          </article>
+
+          <article class="step">
+            <p class="step-num">03</p>
+            <h3 class="step-title">Verify <span class="step-note">Tavily</span></h3>
+            <p class="step-body">Only the risky ones go to the live web.</p>
+            <svg class="step-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="21" cy="21" r="12"/>
+              <path d="M30 30 40 40"/>
+            </svg>
+          </article>
+
+          <article class="step">
+            <p class="step-num">04</p>
+            <h3 class="step-title">Fix + Expire</h3>
+            <p class="step-body">Old value out, new value in, with a fresh TTL.</p>
+            <svg class="step-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="24" cy="24" r="15"/>
+              <path d="M24 15v10l7 5"/>
+            </svg>
+          </article>
+        </div>
+
+        <div class="pair">
+          <div class="pair-cell">
+            <p class="label">TAVILY</p>
+            <p class="pair-line">The proof.</p>
+          </div>
+          <div class="pair-cell">
+            <p class="label">BIFROST</p>
+            <p class="pair-line">The reliability.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────────--- -->
+  <footer class="footer" id="github">
+    <div class="wrap">
+      <div class="footer-top">
+        <p class="label">BUILT FOR GLOBAL AI HACKATHON 2026</p>
+        <a class="nav-pill" href="#github">GitHub ↗</a>
+      </div>
+      <div class="wordmark" aria-hidden="true">BestBeforeRot</div>
+      <div class="footer-bottom">
+        <p class="footer-note">A quiet little tool that tells you which sentences went bad.</p>
+        <p class="footer-note">Team · BestBeforeRot</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js" defer></script>
 </body>
 </html>
