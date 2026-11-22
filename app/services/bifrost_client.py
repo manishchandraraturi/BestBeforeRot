@@ -79,12 +79,49 @@ def _routing(payload: dict, headers: httpx.Headers) -> tuple[str, bool]:
     return provider, bool(is_fallback)
 
 
+def _content_text(content: object) -> str:
+    """Flatten `message.content`, which some OpenAI-compatible providers send as parts.
+
+    Groq's gpt-oss models can answer with `[{"type": "text", "text": "..."}]` instead of a
+    plain string; calling .strip() on that list used to crash the whole request.
+    """
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        chunks: list[str] = []
+        for part in content:
+            if isinstance(part, str):
+                chunks.append(part)
+            elif isinstance(part, dict) and isinstance(part.get("text"), str):
+                chunks.append(part["text"])
+        return "".join(chunks).strip()
+    return ""
+
+
 def _text_of(payload: dict) -> str:
     """Pull the assistant text out of an OpenAI-shaped response."""
     try:
-        return (payload["choices"][0]["message"]["content"] or "").strip()
+        content = payload["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:
         raise UpstreamError("Bifrost response had no assistant message") from exc
+    return _content_text(content)
+
+
+def _error_detail(response: httpx.Response) -> str:
+    """Shortest useful reason for an error status: the gateway's own message when present."""
+    try:
+        payload = response.json()
+    except ValueError:
+        return response.text[:300].strip()
+    if isinstance(payload, dict):
+        error = payload.get("error")
+        if isinstance(error, dict) and isinstance(error.get("message"), str):
+            return error["message"][:300]
+        if isinstance(error, str):
+            return error[:300]
+        if isinstance(payload.get("message"), str):
+            return payload["message"][:300]
+    return response.text[:300].strip()
 
 
 async def chat(
@@ -105,36 +142,50 @@ async def chat(
     client = _get_client()
 
     response: httpx.Response | None = None
+    last_error: httpx.HTTPError | None = None
     for attempt in (1, 2):
         try:
             response = await client.post(url, json=body)
             break
         except (httpx.TimeoutException, httpx.ConnectError) as exc:
+            last_error = exc
             if attempt == 2:
-                raise UpstreamError(f"Bifrost unreachable at {settings.BIFROST_URL}") from exc
+                break
             logger.warning("Bifrost network error, retrying once: %s", type(exc).__name__)
 
     if response is None:
-        raise UpstreamError(f"Bifrost unreachable at {settings.BIFROST_URL}")
+        # A slow gateway is not an offline one: report the timeout as such (HTTP 504).
+        if isinstance(last_error, httpx.TimeoutException):
+            raise UpstreamError(
+                f"Bifrost timed out after {settings.REQUEST_TIMEOUT_S:g}s"
+            ) from last_error
+        raise UpstreamError(f"Bifrost unreachable at {settings.BIFROST_URL}") from last_error
     if response.status_code >= 400:
+        # Groq answers 429 on a token-per-minute limit and 5xx while overloaded; both are
+        # upstream failures the UI shows as a message, never a crash.
         raise UpstreamError(
-            f"Bifrost returned HTTP {response.status_code}: {response.text[:300]}"
+            f"Bifrost returned HTTP {response.status_code}: {_error_detail(response)}"
         )
 
     try:
         payload = response.json()
     except ValueError as exc:
         raise UpstreamError("Bifrost returned non-JSON") from exc
+    if not isinstance(payload, dict):
+        raise UpstreamError("Bifrost returned an unexpected payload")
 
-    provider, fallback_triggered = _routing(payload, response.headers)
-    usage = payload.get("usage") or {}
-    result = ChatResult(
-        text=_text_of(payload),
-        tokens_in=int(usage.get("prompt_tokens") or 0),
-        tokens_out=int(usage.get("completion_tokens") or 0),
-        provider=provider or "unknown",
-        fallback_triggered=fallback_triggered or outage,
-    )
+    try:
+        provider, fallback_triggered = _routing(payload, response.headers)
+        usage = payload.get("usage") or {}
+        result = ChatResult(
+            text=_text_of(payload),
+            tokens_in=int(usage.get("prompt_tokens") or 0),
+            tokens_out=int(usage.get("completion_tokens") or 0),
+            provider=provider or "unknown",
+            fallback_triggered=fallback_triggered or outage,
+        )
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise UpstreamError(f"Bifrost response was malformed: {type(exc).__name__}") from exc
     logger.info(
         "bifrost chat model=%s provider=%s fallback=%s tokens_in=%d tokens_out=%d",
         requested,

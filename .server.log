@@ -1,0 +1,14 @@
+INFO:     Started server process [26896]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59633 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59638 - "GET /api/health HTTP/1.1" 200 OK
+claim JSON unusable, one repair retry: claim JSON did not parse: Expecting ',' delimiter
+INFO:     127.0.0.1:60265 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60180 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59698 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59704 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59704 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59704 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59713 - "POST /api/verify HTTP/1.1" 200 OK

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -77,8 +77,12 @@ async def _read_question(request: AskRequest) -> str:
 
 
 def _status_for(message: str) -> int:
-    """503 when the gateway itself is unreachable, 502 for every other upstream failure."""
-    return 503 if message.startswith("Bifrost unreachable") else 502
+    """503 when the gateway is unreachable, 504 when it was too slow, 502 for the rest."""
+    if message.startswith("Bifrost unreachable"):
+        return 503
+    if message.startswith("Bifrost timed out"):
+        return 504
+    return 502
 
 
 def _error(exc: Exception) -> JSONResponse:
@@ -111,6 +115,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FactTTL", lifespan=lifespan)
+
+
+@app.exception_handler(Exception)
+async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
+    """Last line of defence: any unexpected crash is a clean JSON 500, not a raw page."""
+    logger.error(
+        "unhandled error on %s %s",
+        request.method,
+        request.url.path,
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"error": "An internal error occurred. Please try again."},
+    )
 
 
 @app.get("/api/health")

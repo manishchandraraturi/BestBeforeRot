@@ -101,6 +101,20 @@ async def test_one_retry_on_connect_error() -> None:
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_list_content_parts_are_flattened() -> None:
+    """A provider that returns content as text parts does not crash the request."""
+    payload = _payload("groq")
+    payload["choices"][0]["message"]["content"] = [
+        {"type": "text", "text": '{"claims": '},
+        {"type": "text", "text": "[]}"},
+    ]
+    respx.post(URL).mock(return_value=httpx.Response(200, json=payload))
+    result = await bifrost_client.chat([{"role": "user", "content": "hi"}])
+    assert result.text == '{"claims": []}'
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_http_error_raises_upstream_error() -> None:
     """A 5xx from Bifrost becomes UpstreamError."""
     respx.post(URL).mock(return_value=httpx.Response(503, json={"error": "down"}))
