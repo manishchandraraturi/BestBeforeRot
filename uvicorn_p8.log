@@ -5,3 +5,12 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 INFO:     127.0.0.1:56115 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56124 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:64825 - "GET /_mermaid_check.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65359 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65359 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59077 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60039 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63363 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64479 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64293 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64293 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54851 - "GET /api/health HTTP/1.1" 200 OK

@@ -14,12 +14,9 @@
   ];
 
   var SAMPLES = {
-    pricing:
-      "The Notion Plus plan costs $5 per month. Sam Altman is the CEO of OpenAI. The Eiffel Tower is in Paris.",
-    version:
-      "Python 3.11 is the latest stable release of Python. It ships the faster CPython interpreter and is recommended for new projects.",
-    ceo:
-      "Sam Altman is the CEO of OpenAI. Notion Plus costs $5 per month. The Eiffel Tower is in Paris.",
+    pricing: "The Notion Plus plan costs $5 per month.",
+    version: "Python 3.8 is the latest version.",
+    ceo: "The current CEO of OpenAI is Jack Dorsey.",
   };
 
   var answer = document.getElementById("answer");
@@ -530,6 +527,8 @@
   }
 
   function verify() {
+    if (verifyBtn.classList.contains("is-loading")) return;
+
     var text = answer.value.trim();
 
     if (text.length < 20) {
@@ -590,12 +589,14 @@
   verifyBtn.addEventListener("click", verify);
   retryBtn.addEventListener("click", verify);
 
+  // Demo mode: one click fills the box *and* runs the check, so nobody has to
+  // type or hunt for the Verify button to see what the tool does.
   document.querySelectorAll(".chip").forEach(function (chip) {
     chip.addEventListener("click", function () {
       var sample = SAMPLES[chip.getAttribute("data-sample")];
       if (!sample) return;
       answer.value = sample;
-      answer.focus();
+      verify();
     });
   });
 
@@ -609,47 +610,186 @@
 
   copyBtn.addEventListener("click", copyCorrected);
 
-  /* ── scroll reveal ──────────────────────────────────────── */
+  /* ── scroll reveal · how-line draw · result counters ────── */
 
-  (function reveal() {
-    var elements = Array.prototype.slice.call(
-      document.querySelectorAll(".reveal")
-    );
+  (function motion() {
+    var reduced =
+      !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
-    function revealInView() {
-      elements.forEach(function (el) {
-        if (el.classList.contains("in")) return;
-        var rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.95) el.classList.add("in");
+    var elements = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+    var steps = document.querySelector(".steps");
+    var resultStats = document.querySelector(".result-stats");
+    var counters = resultStats
+      ? Array.prototype.slice.call(resultStats.querySelectorAll(".count"))
+      : [];
+    var counted = false;
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function runCounters() {
+      if (counted) return;
+      counted = true;
+
+      counters.forEach(function (el) {
+        var target = Number(el.getAttribute("data-target")) || 0;
+        var startValue = Number(el.textContent) || 0;
+
+        if (reduced || !window.requestAnimationFrame) {
+          el.textContent = String(target);
+          return;
+        }
+
+        var startedAt = null;
+        var duration = 1500;
+
+        function tick(now) {
+          if (startedAt === null) startedAt = now;
+          var t = Math.min(1, (now - startedAt) / duration);
+          el.textContent = String(
+            Math.round(startValue + (target - startValue) * easeOut(t))
+          );
+          if (t < 1) window.requestAnimationFrame(tick);
+        }
+
+        window.requestAnimationFrame(tick);
+
+        // rAF never fires in a hidden or throttled tab: settle on the number.
+        setTimeout(function () {
+          el.textContent = String(target);
+        }, duration + 250);
       });
     }
 
-    if (!("IntersectionObserver" in window)) {
+    function show(el) {
+      if (el.classList.contains("in")) return;
+      el.classList.add("in");
+      if (el === steps) el.classList.add("drawn");
+      if (el === resultStats) runCounters();
+    }
+
+    function inViewport(el) {
+      var rect = el.getBoundingClientRect();
+      var height = window.innerHeight || document.documentElement.clientHeight;
+      return rect.top < height * 0.92 && rect.bottom > 0;
+    }
+
+    function sweep() {
       elements.forEach(function (el) {
-        el.classList.add("in");
+        if (!el.classList.contains("in") && inViewport(el)) show(el);
+      });
+    }
+
+    if (reduced) {
+      elements.forEach(function (el) {
+        show(el);
       });
       return;
     }
 
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("in");
-          observer.unobserve(entry.target);
-        });
+    if ("IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            show(entry.target);
+            observer.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -6% 0px" }
+      );
+
+      elements.forEach(function (el) {
+        observer.observe(el);
+      });
+    }
+
+    // Safety net for tabs and engines where the observer stays silent.
+    window.addEventListener("scroll", sweep, { passive: true });
+    window.addEventListener("resize", sweep);
+    window.addEventListener("load", sweep);
+    sweep();
+    setTimeout(sweep, 900);
+
+    // A tab that is never painted gets no observer or rAF frames at all, so a
+    // plain timer keeps the reveal and the counters honest until they happen.
+    var ticks = 0;
+    var watchdog = setInterval(function () {
+      ticks += 1;
+      sweep();
+      if (counted || ticks > 60) clearInterval(watchdog);
+    }, 700);
+  })();
+
+  /* ── custom cursor ──────────────────────────────────────── */
+
+  (function cursor() {
+    var dot = document.getElementById("cursor");
+    if (!dot) return;
+
+    var exact = !!(window.matchMedia && window.matchMedia("(pointer: fine)").matches);
+    var reduced =
+      !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    if (!exact || reduced) {
+      dot.parentNode.removeChild(dot);
+      return;
+    }
+
+    var targetX = 0;
+    var targetY = 0;
+    var x = 0;
+    var y = 0;
+    var running = false;
+    var seen = false;
+    var HOT = "a, button, input, textarea, select, .chip, .claim, .step, .pair-cell";
+
+    function frame() {
+      x += (targetX - x) * 0.3;
+      y += (targetY - y) * 0.3;
+      dot.style.transform = "translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px,0)";
+
+      if (Math.abs(targetX - x) > 0.15 || Math.abs(targetY - y) > 0.15) {
+        window.requestAnimationFrame(frame);
+      } else {
+        running = false;
+      }
+    }
+
+    document.addEventListener(
+      "mousemove",
+      function (event) {
+        targetX = event.clientX;
+        targetY = event.clientY;
+
+        if (!seen) {
+          seen = true;
+          x = targetX;
+          y = targetY;
+          dot.classList.add("is-on");
+          document.documentElement.classList.add("has-cursor");
+        }
+
+        if (!running) {
+          running = true;
+          window.requestAnimationFrame(frame);
+        }
       },
-      { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+      { passive: true }
     );
 
-    elements.forEach(function (el) {
-      observer.observe(el);
+    document.addEventListener("mouseover", function (event) {
+      var node = event.target;
+      var hot = node && node.closest ? node.closest(HOT) : null;
+      dot.classList.toggle("is-active", !!hot);
     });
 
-    // Margin of safety: the observer needs frames, so also check on scroll/load.
-    window.addEventListener("scroll", revealInView, { passive: true });
-    window.addEventListener("resize", revealInView);
-    revealInView();
-    setTimeout(revealInView, 1200);
+    document.addEventListener("mouseout", function (event) {
+      if (event.relatedTarget) return;
+      dot.classList.remove("is-on");
+      document.documentElement.classList.remove("has-cursor");
+    });
   })();
+
 })();

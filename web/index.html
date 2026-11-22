@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BestBeforeRot — Every fact has an expiry date.</title>
   <meta name="description" content="AI answers go stale. BestBeforeRot finds the claims that expired, checks them on the live web, and fixes them.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fafafa' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M12 2c.7 4.8 2.5 6.6 7.3 7.3-4.8.7-6.6 2.5-7.3 7.3-.7-4.8-2.5-6.6-7.3-7.3C9.5 8.6 11.3 6.8 12 2Z'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fafafa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M7.9 12.3 10.7 15 16.2 9.1'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,12 +16,19 @@
   <!-- ── NAV ─────────────────────────────────────────────────────────── -->
   <header class="nav">
     <div class="nav-inner">
-      <a class="logo" href="#top">BestBeforeRot <span class="logo-star" aria-hidden="true">✦</span></a>
+      <a class="logo" href="#top" aria-label="BestBeforeRot home">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7.85 12.3 10.7 15.05 16.25 9" stroke="currentColor" stroke-width="1.75"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>BestBeforeRot</span>
+      </a>
       <nav class="nav-links" aria-label="Sections">
         <a href="#try">Try it</a>
         <a href="#how">How it works</a>
         <a href="#results">Results</a>
-        <a class="nav-pill" href="#github">GitHub</a>
+        <a class="nav-pill" href="https://github.com/manishchandraraturi/BestBeforeRot" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       </nav>
     </div>
   </header>
@@ -33,7 +40,7 @@
       <div class="hero-inner">
 
         <div class="hero-copy">
-          <p class="label hero-label">GLOBAL AI HACKATHON · STALE-ANSWER DETECTOR</p>
+          <p class="label hero-label">STALE-ANSWER DETECTOR · LIVE WEB CHECK</p>
 
           <h1 class="hero-title">
             <span class="line"><span class="word" style="--i:0">Every</span> <span class="word" style="--i:1">fact</span> <span class="word" style="--i:2">has</span></span>
@@ -98,6 +105,20 @@
               <path d="M6 120C48 120 60 44 116 44M120 74c40 0 46 42 92 42" stroke-dasharray="4 7" opacity=".7"/>
             </svg>
           </div>
+
+          <div class="doodle doodle-clock2" style="--delay:.5s;--dur:7.6s">
+            <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle class="draw" cx="36" cy="36" r="25" style="stroke-dasharray:157;--len:157;animation-delay:.35s"/>
+              <path class="draw" d="M36 22v14l9 6" style="stroke-dasharray:40;--len:40;animation-delay:.9s"/>
+            </svg>
+          </div>
+
+          <div class="doodle doodle-check" style="--delay:1.9s;--dur:8.4s">
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle class="draw" cx="32" cy="32" r="23" style="stroke-dasharray:145;--len:145;animation-delay:.3s"/>
+              <path class="draw" d="M21.5 33 28.5 40 42.5 25" style="stroke-dasharray:44;--len:44;animation-delay:.9s"/>
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -132,12 +153,14 @@
               <span class="panel-meta">PLAIN TEXT · MAX 4000</span>
             </div>
 
+            <p class="demo-hint">Not sure what to test? Try an example:</p>
+
             <textarea id="answer" class="field" placeholder="Paste an AI answer here..."
                       spellcheck="false" maxlength="4000" aria-label="AI answer to verify"></textarea>
 
             <div class="chips" role="group" aria-label="Sample answers">
-              <button type="button" class="chip" data-sample="pricing">Pricing</button>
-              <button type="button" class="chip" data-sample="version">API version</button>
+              <button type="button" class="chip" data-sample="pricing">PRICING</button>
+              <button type="button" class="chip" data-sample="version">API VERSION</button>
               <button type="button" class="chip" data-sample="ceo">CEO</button>
             </div>
 
@@ -324,15 +347,15 @@
 
         <div class="result-stats reveal">
           <article class="result-stat">
-            <p class="result-num">14<span class="result-of">/15</span></p>
+            <p class="result-num"><span class="count" data-target="14">0</span><span class="result-of">/15</span></p>
             <p class="result-label">STALE CAUGHT</p>
           </article>
           <article class="result-stat">
-            <p class="result-num">0</p>
+            <p class="result-num"><span class="count" data-target="0">0</span></p>
             <p class="result-label">FALSE ALARMS</p>
           </article>
           <article class="result-stat">
-            <p class="result-num">5<span class="result-of">%</span></p>
+            <p class="result-num"><span class="count" data-target="5">0</span><span class="result-of">%</span></p>
             <p class="result-label">SEARCH CREDITS SAVED</p>
           </article>
         </div>
@@ -346,16 +369,18 @@
   <footer class="footer" id="github">
     <div class="wrap">
       <div class="footer-top">
-        <p class="label">BUILT FOR GLOBAL AI HACKATHON 2026</p>
-        <a class="nav-pill" href="#github">GitHub ↗</a>
+        <p class="footer-tagline">Your AI answer has an expiry date.</p>
+        <a class="nav-pill" href="https://github.com/manishchandraraturi/BestBeforeRot" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       </div>
       <div class="wordmark" aria-hidden="true">BestBeforeRot</div>
       <div class="footer-bottom">
         <p class="footer-note">A quiet little tool that tells you which sentences went bad.</p>
-        <p class="footer-note">Team · BestBeforeRot</p>
+        <p class="footer-note">© 2026 BestBeforeRot. All rights reserved.</p>
       </div>
     </div>
   </footer>
+
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
 
   <script src="/app.js" defer></script>
 </body>

@@ -1,0 +1,21 @@
+INFO:     Started server process [14784]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64521 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49868 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49868 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49868 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65172 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65172 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65173 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55783 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55783 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55784 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63511 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63511 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63511 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57414 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64275 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53073 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52324 - "GET /api/health HTTP/1.1" 200 OK
