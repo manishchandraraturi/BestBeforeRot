@@ -20,6 +20,7 @@
       <nav class="nav-links" aria-label="Sections">
         <a href="#try">Try it</a>
         <a href="#how">How it works</a>
+        <a href="#results">Results</a>
         <a class="nav-pill" href="#github">GitHub</a>
       </nav>
     </div>
@@ -118,12 +119,12 @@
     <!-- ── CONSOLE ───────────────────────────────────────────────────── -->
     <section class="section console" id="try">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head reveal">
           <p class="label">01 · THE CONSOLE</p>
           <h2 class="section-title">Try it on a real answer.</h2>
         </div>
 
-        <div class="console-grid">
+        <div class="console-grid reveal">
           <!-- LEFT: input card -->
           <div class="panel panel-input">
             <div class="panel-head">
@@ -221,6 +222,21 @@
                   </div>
                 </article>
               </div>
+
+              <!-- corrected answer -->
+              <div class="answer-block">
+                <div class="answer-head">
+                  <div class="tabs" role="tablist" aria-label="Answer view">
+                    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="original">Original</button>
+                    <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="corrected">Corrected</button>
+                    <button type="button" class="tab" role="tab" aria-selected="false" data-tab="diff">Diff</button>
+                  </div>
+                  <button type="button" class="copy-btn" id="copy">Copy corrected</button>
+                </div>
+                <div class="answer-body">
+                  <p class="answer-text" id="answer-text"></p>
+                </div>
+              </div>
             </div>
 
             <!-- error -->
@@ -237,12 +253,12 @@
     <!-- ── HOW IT WORKS ──────────────────────────────────────────────── -->
     <section class="section how" id="how">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head reveal">
           <p class="label">02 · HOW IT WORKS</p>
           <h2 class="section-title">Split. Flag. Verify. Fix.</h2>
         </div>
 
-        <div class="steps">
+        <div class="steps reveal">
           <span class="steps-line" aria-hidden="true"></span>
 
           <article class="step">
@@ -285,7 +301,7 @@
           </article>
         </div>
 
-        <div class="pair">
+        <div class="pair reveal">
           <div class="pair-cell">
             <p class="label">TAVILY</p>
             <p class="pair-line">The proof.</p>
@@ -295,6 +311,33 @@
             <p class="pair-line">The reliability.</p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ── RESULTS ───────────────────────────────────────────────────── -->
+    <section class="section results" id="results">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="label">03 · RESULTS</p>
+          <h2 class="section-title">Honest numbers, not vibes.</h2>
+        </div>
+
+        <div class="result-stats reveal">
+          <article class="result-stat">
+            <p class="result-num">14<span class="result-of">/15</span></p>
+            <p class="result-label">STALE CAUGHT</p>
+          </article>
+          <article class="result-stat">
+            <p class="result-num">1</p>
+            <p class="result-label">FALSE ALARMS</p>
+          </article>
+          <article class="result-stat">
+            <p class="result-num">57<span class="result-of">%</span></p>
+            <p class="result-label">SEARCH CREDITS SAVED</p>
+          </article>
+        </div>
+
+        <p class="results-foot reveal">*(Placeholder - Benchmark pending)* · 40 hand-labeled claims, Nov 2026.</p>
       </div>
     </section>
   </main>

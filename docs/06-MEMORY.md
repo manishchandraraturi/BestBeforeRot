@@ -38,7 +38,7 @@
 | P6 | Cache + rewrite + stats + endpoints | DONE (tests passed) | 2026-11-21 | 11 cache/rewrite tests, 74 total; cold 7 386 ms `cache_hits=0` → warm 718 ms `cache_hits=1`, `tavily_credits_used=0` → fallback `fallback_triggered=true` on gemini; all HTTP 200 |
 | P7a | UI shell | DONE (tests passed) | 2026-11-21 | `web/index.html` rewritten, `web/styles.css` new, `web/app.js` created empty; fonts 200 from Google, 0 console errors, no horizontal scroll at 1440 or 375 |
 | P7b | UI console | DONE (tests passed) | 2026-11-21 | Marquee gap fixed (8 spans, 0→-50%); console cards + `fetch /api/verify`; gate answer → 49 risky, Notion stale/red with `$12`, Sam Altman fresh/green, Eiffel Tower skipped; 0 console errors |
-| P7c | UI results polish | TODO | | |
+| P7c | UI results polish | DONE (tests passed) | 2026-11-21 | Word-by-word strike → fix fade, TTL rings, Original/Corrected/Diff tabs, Copy corrected, scroll reveals, Results placeholder; 3 demo runs cold 4.7 s / warm 1.6 s / fallback 1.7 s, 0 console errors |
 | P8 | Benchmark | TODO | | |
 | P9 | README / deck / video / submit | TODO | | |
 
@@ -191,6 +191,11 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 33 | The three sample chips write a local `SAMPLES` string into the textarea instead of calling `GET /api/samples` | the phase says the chips only need to be styled; a local fill costs no request and keeps them from being dead buttons | P7b |
 | 34 | Score count-up + ring use `requestAnimationFrame`, but a `setTimeout` at `duration + 150` ms snaps both to their final value | rAF does not fire while the Freebuff window is minimised/covered — the gate showed `data-value="49"` with the number stuck at `0`; the timeout makes the result correct even with no frames | P7b |
 | 35 | Claim cards are built with `createElement` + `textContent` (never `innerHTML`) | claim text, reasons and source URLs come from the LLM and the web; text nodes make markup injection impossible | P7b |
+| 36 | A stale claim's strike is drawn **word by word** (one `span.strike-word` per word, `::after` scaleX 0→1, 45 ms stagger ≈ .5 s) instead of `text-decoration: line-through` | `text-decoration` cannot animate left-to-right, and one overlay line on the paragraph cuts through the gap between wrapped lines; per-word lines follow the text at any width | P7c |
+| 37 | The TTL ring's progress = time left ÷ (`ttl_days` × 24 h) from `expires_at`, and its label is the TTL (`1d` / `7d` / `30d` / `∞`) | the phase asks for the TTL label; the arc is what shows time actually remaining. A `23h` style countdown label is still possible later from the same `expires_at` | P7c |
+| 38 | The Diff tab is computed in the browser with a word-level LCS: removed words `<s>`, added words `<u>`, no backgrounds | 04-DESIGN §4 asks for underline-only highlighting; the API has no diff field, so the browser derives it from `original_answer` and `corrected_answer` | P7c |
+| 39 | Scroll reveal keeps `IntersectionObserver` as the primary trigger **plus** an `revealInView()` pass on load, scroll and resize | IO only fires while frames render; the scroll pass keeps content visible if frames are throttled, without adding a library | P7c |
+| 40 | `Copy corrected` uses `navigator.clipboard.writeText` with a hidden-textarea `execCommand` fallback; the label flips to `Copied!` for 2 s | works on `127.0.0.1` and on hosts where the async clipboard is denied; no dependency | P7c |
 
 ## 6. Working commands (add as they are proven)
 
@@ -249,6 +254,18 @@ node --check web/app.js                     # JS OK
 # marquee: 8 spans, track 4 771 px, half 2 386 px >= 1 440; at translateX(-50%) content covers 0..1789 with no gap
 # 375x812: scrollWidth 358, panels stacked 318/318, textarea 180, chips/toggles 44, verify 46, stats no overflow
 # error paths (fetch stubbed in the page, no server change): short text, 503 body, network reject -> state=error + Try again
+# P7c gate (verified 2026-11-21, 0 console messages all the way through)
+curl -X DELETE http://127.0.0.1:8000/api/cache          # {"deleted":2}, then the 3-run demo script (01-PRD.md §11)
+# run 1 cold:    4.7 s, CLAIMS 3 · SEARCHED 2 · SKIPPED 1 · CACHE 0, 49 risky, ROUTED VIA GROQ
+# run 2 warm:    1.6 s, SEARCHED 0 · CACHE 2, FROM CACHE badge, same 3 verdicts and TTL rings 1d / 30d / infinity
+# run 3 fallback: 1.7 s with Simulate outage ON -> FALLBACK -> GEMINI badge, still 200 + 3 claim cards
+# strike: 8 .strike-word spans on the stale claim, ::after animationName=strike, end transform scaleX(1)
+# fix: animationDelay 0.61 s, ends opacity 1 with the 2px --fresh bar
+# TTL rings: 1d (stale ring, red), 30d (fresh, green), infinity (stable, grey); dashoffset ~0 because the clocks just started
+# tabs: Corrected default; Original -> $5 text, Diff -> <s>$5</s> <u>$10</u>, Corrected -> $10; aria-selected follows
+# copy: clipboard.writeText spy captured the exact corrected_answer; label 'Copied!' -> back to 'Copy corrected' after 2 s
+# reveals: all 8 .reveal elements get .in by the bottom of the page (results section + placeholder footnote visible)
+# 375x812: scrollWidth 358, tabs 44 px, copy 44 px, result stats single column, answer text 281 px no overflow
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
@@ -306,6 +323,11 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - `.stats` renders one `span` per cell plus a `span.stats-sep` holding `·`, with the label and value in separate nodes; `textContent` therefore reads `CLAIMS 3·SEARCHED 0…`, which is why the strip is a flex row and not one string.
 - The left card is `min-height: 560px` and the result card grows with its claims; `.console-grid` is `align-items: start` so the shorter input card does not stretch into a tall empty box (the Verify button sits after the note, not pinned to the bottom).
 - `preview_click` coordinates are reported in viewport space after scrolling; the button's y moves once the result panel changes height, so measure with `getBoundingClientRect()` before trusting a click point.
+- While the Freebuff window is covered, CSS animations and `IntersectionObserver` callbacks do not advance at all: right after a result the strike `::after` reads `scaleX(0)` and the fix reads `opacity: 0`. `document.getAnimations().forEach(a => a.finish())` jumps them to their end states, which is how the P7c gate checked `scaleX(1)` / `opacity: 1`.
+- Same cause made every `.reveal` stay at `opacity: 0` after the first P7c load. Fixed by decision 39's scroll/load `revealInView()` pass; the scroll handler fires even when frames are paused.
+- `navigator.clipboard.readText()` is refused (`NotAllowedError`) in the automated preview, so the copy path was proven with a spy on `writeText` instead; the label change alone does not prove the write.
+- `preview_screenshot` returned an all-black frame for the scrolled Results section while the window was covered, even though `preview_evaluate` reported opacity 1 and real rects for the same elements — measurements are the reliable check in that state.
+- The tabs and `Copy corrected` only reach the 44 px tap target inside the ≤640 px media query; on desktop they stay 26/30 px tall so the underline sits right against the text.
 
 ## 9. Benchmark snapshot (fill in P8)
 

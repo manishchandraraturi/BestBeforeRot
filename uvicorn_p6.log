@@ -49,3 +49,56 @@ INFO:     127.0.0.1:49218 - "GET /styles.css HTTP/1.1" 304 Not Modified
 INFO:     127.0.0.1:63224 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63224 - "GET /styles.css HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63224 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50627 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52345 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52346 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52347 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52353 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52353 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52354 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63331 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50654 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50654 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50655 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60799 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64741 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64741 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64742 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64754 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64133 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64133 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64134 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64137 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61138 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61138 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61139 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61149 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53308 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55545 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55545 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55546 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55559 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55200 - "DELETE /api/cache HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50178 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50178 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50178 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56412 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56620 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56620 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56620 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50062 - "DELETE /api/cache HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50063 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65408 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64395 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63428 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56126 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56126 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56127 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50425 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63823 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63823 - "GET /styles.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63824 - "GET /app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58445 - "POST /api/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64381 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64382 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64383 - "GET /app.js HTTP/1.1" 200 OK
