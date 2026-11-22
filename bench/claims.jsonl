@@ -1,0 +1,40 @@
+{"text": "The Notion Plus plan costs $5 per member per month.", "label": "stale", "type": "pricing", "truth_url": "https://www.notion.com/pricing"}
+{"text": "Spotify Premium Individual costs $9.99 per month in the United States.", "label": "stale", "type": "pricing", "truth_url": "https://www.spotify.com/us/premium"}
+{"text": "The standard Netflix plan costs $15.49 per month in the United States.", "label": "stale", "type": "pricing", "truth_url": "https://help.netflix.com/en/node/24926"}
+{"text": "Amazon Prime costs $119 per year in the United States.", "label": "stale", "type": "pricing", "truth_url": "https://www.amazon.com/amazonprime"}
+{"text": "GPT-4 is OpenAI's most capable model.", "label": "stale", "type": "version", "truth_url": "https://developers.openai.com/api/docs/models"}
+{"text": "Claude 2 is Anthropic's newest model.", "label": "stale", "type": "version", "truth_url": "https://platform.claude.com/docs/en/models/overview"}
+{"text": "Gemini 1.5 Pro is Google's latest Gemini model.", "label": "stale", "type": "version", "truth_url": "https://aistudio.google.com/docs/changelog"}
+{"text": "Python 3.11 is the latest stable release of Python.", "label": "stale", "type": "version", "truth_url": "https://www.python.org/downloads/"}
+{"text": "Node.js 18 is the current LTS version of Node.js.", "label": "stale", "type": "version", "truth_url": "https://nodejs.org/en/about/previous-releases"}
+{"text": "The iPhone 14 is Apple's newest iPhone.", "label": "stale", "type": "version", "truth_url": "https://www.apple.com/iphone/"}
+{"text": "Tim Cook is the CEO of Apple.", "label": "stale", "type": "leadership", "truth_url": "https://www.apple.com/leadership/"}
+{"text": "Jack Dorsey is the CEO of Twitter.", "label": "stale", "type": "leadership", "truth_url": "https://about.x.com/en/who-we-are"}
+{"text": "Parag Agrawal is the CEO of Twitter.", "label": "stale", "type": "leadership", "truth_url": "https://about.x.com/en/who-we-are"}
+{"text": "The EU AI Act entered into force in 2021.", "label": "stale", "type": "law", "truth_url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"}
+{"text": "GDPR fines are capped at 10 million euros or 2% of global annual turnover.", "label": "stale", "type": "law", "truth_url": "https://gdpr-info.eu/art-83-gdpr/"}
+{"text": "The Notion Plus plan costs $10 per member per month when billed yearly.", "label": "fresh", "type": "pricing", "truth_url": "https://www.notion.com/pricing"}
+{"text": "ChatGPT Plus costs $20 per month.", "label": "fresh", "type": "pricing", "truth_url": "https://help.openai.com/en/articles/6950777-what-is-chatgpt-plus"}
+{"text": "Claude Pro costs $20 per month.", "label": "fresh", "type": "pricing", "truth_url": "https://claude.com/pricing"}
+{"text": "GitHub Copilot Pro costs $10 per month.", "label": "fresh", "type": "pricing", "truth_url": "https://github.com/features/copilot/plans"}
+{"text": "Spotify Premium Individual costs $12.99 per month in the United States.", "label": "fresh", "type": "pricing", "truth_url": "https://www.spotify.com/us/premium"}
+{"text": "The standard Netflix plan costs $19.99 per month in the United States.", "label": "fresh", "type": "pricing", "truth_url": "https://help.netflix.com/en/node/24926"}
+{"text": "Amazon Prime costs $139 per year in the United States.", "label": "fresh", "type": "pricing", "truth_url": "https://www.amazon.com/amazonprime"}
+{"text": "GPT-6.2 Astra is OpenAI's flagship model.", "label": "fresh", "type": "version", "truth_url": "https://developers.openai.com/api/docs/models"}
+{"text": "Claude Fable 5.2 is Anthropic's most capable model.", "label": "fresh", "type": "version", "truth_url": "https://platform.claude.com/docs/en/models/overview"}
+{"text": "Python 3.15 is the latest stable release of Python.", "label": "fresh", "type": "version", "truth_url": "https://www.python.org/downloads/"}
+{"text": "Node.js 26 is the current Active LTS version of Node.js.", "label": "fresh", "type": "version", "truth_url": "https://nodejs.org/en/about/previous-releases"}
+{"text": "John Ternus is the CEO of Apple.", "label": "fresh", "type": "leadership", "truth_url": "https://www.apple.com/leadership/"}
+{"text": "Satya Nadella is the CEO of Microsoft.", "label": "fresh", "type": "leadership", "truth_url": "https://www.microsoft.com/en-us/about/leadership"}
+{"text": "The EU AI Act became applicable on 2 August 2026.", "label": "fresh", "type": "law", "truth_url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"}
+{"text": "The EU AI Act's obligations for general-purpose AI model providers apply from 2 August 2025.", "label": "fresh", "type": "law", "truth_url": "https://digital-strategy.ec.europa.eu/en/factpages/general-purpose-ai-obligations-under-ai-act"}
+{"text": "Acme Cloud's Team plan costs $19 per seat per month.", "label": "unverifiable", "type": "pricing", "truth_url": null}
+{"text": "Loam Labs has 14 employees as of November 2026.", "label": "unverifiable", "type": "other", "truth_url": null}
+{"text": "The internal codename for Notion's 2027 desktop client is Harbor.", "label": "unverifiable", "type": "version", "truth_url": null}
+{"text": "Tesla will hold its 2027 annual shareholder meeting in Austin on 14 May 2027.", "label": "unverifiable", "type": "other", "truth_url": null}
+{"text": "Nordwind Analytics' enterprise plan includes 250 seats.", "label": "unverifiable", "type": "pricing", "truth_url": null}
+{"text": "The average price of a flat white in Reykjavik in October 2026 was 640 ISK.", "label": "unverifiable", "type": "pricing", "truth_url": null}
+{"text": "The city of Tartu issued 37 building permits for data centres in 2025.", "label": "unverifiable", "type": "other", "truth_url": null}
+{"text": "Brightline Robotics raised $18 million in its Series B round in March 2026.", "label": "unverifiable", "type": "other", "truth_url": null}
+{"text": "The University of Tartu Library holds exactly 3,412,000 volumes.", "label": "unverifiable", "type": "other", "truth_url": null}
+{"text": "Harborlight Bank's premium account charges a 3 euro monthly fee.", "label": "unverifiable", "type": "other", "truth_url": null}

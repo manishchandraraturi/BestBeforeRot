@@ -1,0 +1,87 @@
+2026/11/22 10:06:04 maxprocs: Leaving GOMAXPROCS=12: CPU quota undefined
+
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║   ██████╗ ██╗███████╗██████╗  ██████╗ ███████╗████████╗   ║
+║   ██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝   ║
+║   ██████╔╝██║█████╗  ██████╔╝██║   ██║███████╗   ██║      ║
+║   ██╔══██╗██║██╔══╝  ██╔══██╗██║   ██║╚════██║   ██║      ║
+║   ██████╔╝██║██║     ██║  ██║╚██████╔╝███████║   ██║      ║
+║   ╚═════╝ ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝      ║
+║                                                           ║
+║═══════════════════════════════════════════════════════════║
+║                          v2.6.0                           ║
+║═══════════════════════════════════════════════════════════║
+║                 The Fastest LLM Gateway                   ║
+║═══════════════════════════════════════════════════════════║
+║             https://github.com/maximhq/bifrost            ║
+╚═══════════════════════════════════════════════════════════╝
+
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"config file not found at path: C:\\Users\\DELL\\AppData\\Roaming\\bifrost\\config.json, initializing with default values"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"connecting to sqlite database"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"[configstore] no pending migrations; skipping migration run"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"config store initialized (default SQLite)"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"[logstore] pending migrations"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"[logstore] migration : logs_tune_retention_autovacuum"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"[logstore] pending migrations"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"[logstore] migration : logs_tune_retention_autovacuum"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"logs store initialized"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"Per-user OAuth sweep worker started (flow=1m0s, orphan=24h0m0s, retention=720h0m0s)"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"Per-user headers sweep worker started (orphan=24h0m0s, retention=720h0m0s, expired_flow=15m0s)"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"pricing sync interval set to 24h0m0s (scheduler checks every 5m0s)"}
+{"level":"info","time":"2026-11-22T10:06:04+05:30","message":"initializing model catalog..."}
+{"level":"info","time":"2026-11-22T10:06:06+05:30","message":"existing model parameters found in database (16635 records), syncing from URL in background"}
+{"level":"info","time":"2026-11-22T10:06:06+05:30","message":"existing pricing data found in database, syncing from URL in background"}
+{"level":"info","time":"2026-11-22T10:06:07+05:30","message":"existing MCP library data found in database, syncing from URL in background"}
+{"level":"info","time":"2026-11-22T10:06:07+05:30","message":"initializing MCP catalog..."}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"log retention days: 365"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"log cleanup routine started"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"log retention cleaner initialized with 365 days retention"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"starting log cleanup: deleting logs older than 2025-11-22T04:36:08Z (retention: 365 days)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"initializing logging writer settings: max_batch_size=1000 batch_interval=5s max_batch_bytes=314572800 write_queue_capacity=10000 deferred_usage_concurrency=5"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] GetVirtualKeys loaded 0 keys across 1 pages in 644.5µs"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] loadFromDatabase GetVirtualKeys loaded 0 keys in 1.3242ms"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] loadFromDatabase rebuildInMemoryStructures took 0s"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] loadFromDatabase total took 10.517ms"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"governance store initialized successfully"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] NewLocalGovernanceStore took 10.517ms"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] governance_startup_reset lock acquisition took 2.5332ms (acquired=true)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] PerformStartupResets in-memory reset of 0 rate limits took 0s"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] PerformStartupResets in-memory reset of 0 budgets took 0s"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[startup-timing] PerformStartupResets took 613.4µs"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"webhook dispatcher initialized"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"async job executor initialized"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[CODE MODE] Starlark code mode initialized with binding level: server, timeout: 30s"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[Bifrost MCP] tool manager initialized with tool execution timeout: 30s, max agent depth: 10, and code mode binding level: server"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"[Bifrost MCP] MCP Manager initialized"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"MCP integration initialized successfully"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"bifrost client initialized"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"listing all models and adding to model catalog"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"MCP library sync completed: 127 entries synced from https://getbifrost.ai/mcp-library"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"models added to catalog"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"temp-token sweep worker started (interval=5m0s)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"agent gateway initialized: 0 registered agent(s), push notifications disabled (external client URL not configured)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"Token refresh worker started"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"request body buffer pool limit: 4194304 bytes (buffers above this are released after each request)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"background live model refresh every 1h0m0s (jittered +/-10%)"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"Time spent in Bifrost server bootstrap 4127 ms"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: prompts - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: logging - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: governance - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: routing - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: compat - active"}
+{"level":"warn","time":"2026-11-22T10:06:08+05:30","message":"[Bifrost MCP] the Bifrost MCP spec is unavailable: the Bifrost MCP needs bifrost_url set: its tool calls address Bifrost through that URL"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: model-catalog-resolver - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"plugin status: telemetry - active"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"skills orphan cleanup completed during startup: deleted_db_blobs=0 deleted_storage_objects=0"}
+{"level":"info","time":"2026-11-22T10:06:08+05:30","message":"successfully started bifrost, serving UI on http://localhost:8080/"}
+{"level":"info","http.method":"GET","http.target":"/v1/models","http.status_code":200,"http.request_duration_ms":367,"http.remote_addr":"127.0.0.1:64599","http.user_agent":"curl/8.22.0","trace_id":"e8b9d1e98fe54f13942607cdd5f246be","request_id":"d27b86c4-4bd8-426f-b3df-9d5385fec701","time":"2026-11-22T10:06:22+05:30","message":"request completed"}
+{"level":"info","http.method":"GET","http.target":"/v1/models","http.status_code":200,"http.request_duration_ms":280,"http.remote_addr":"127.0.0.1:64600","http.user_agent":"curl/8.22.0","trace_id":"bf9a8ec470ca4d98badf8f6c12a18b79","request_id":"4266517f-ae46-427e-9195-55246a378878","time":"2026-11-22T10:06:22+05:30","message":"request completed"}
+{"level":"info","http.method":"POST","http.target":"/v1/chat/completions","http.status_code":200,"http.request_duration_ms":1230,"http.remote_addr":"127.0.0.1:54631","http.user_agent":"python-httpx/0.28.1","trace_id":"d0199a8061aa458cbd88b494516148e7","request_id":"d4e1c62a-aae6-49cb-8bcc-11aba9a4f475","time":"2026-11-22T10:06:39+05:30","message":"request completed"}
+{"level":"info","http.method":"POST","http.target":"/v1/chat/completions","http.status_code":200,"http.request_duration_ms":624,"http.remote_addr":"127.0.0.1:54633","http.user_agent":"python-httpx/0.28.1","trace_id":"10d54f4bd9964d2a84cca0112524c07e","request_id":"b134a49f-31e7-4e8f-8821-e680f6a3d825","time":"2026-11-22T10:06:42+05:30","message":"request completed"}
+{"level":"info","time":"2026-11-22T10:06:58+05:30","message":"vk expiry cleanup: enqueued job vk-expiry-cleanup-1795305600"}
+{"level":"warn","time":"2026-11-22T10:06:59+05:30","message":"failed to renew distributed lock model_catalog_params_sync: error extending lock: failed to update lock expiry: context deadline exceeded; sql: transaction has already been committed or rolled back"}
+{"level":"warn","time":"2026-11-22T10:06:59+05:30","message":"background startup model parameters sync failed: failed to sync model parameters to database: context canceled; context canceled"}
+{"level":"info","time":"2026-11-22T10:07:01+05:30","message":"background startup pricing sync completed successfully"}
+{"level":"info","http.method":"POST","http.target":"/v1/chat/completions","http.status_code":200,"http.request_duration_ms":769,"http.remote_addr":"127.0.0.1:57608","http.user_agent":"python-httpx/0.28.1","trace_id":"c0f137083c5f4892b46b9b9a143ccbb7","request_id":"db423659-8271-4bbc-96cf-b1f9b8e8500b","time":"2026-11-22T10:15:27+05:30","message":"request completed"}
+{"level":"info","http.method":"POST","http.target":"/v1/chat/completions","http.status_code":200,"http.request_duration_ms":1181,"http.remote_addr":"127.0.0.1:57608","http.user_agent":"python-httpx/0.28.1","trace_id":"5e698d88ef634db7a96278b92d52d996","request_id":"e6880e17-dec2-4d61-b1bb-d05e26252734","time":"2026-11-22T10:15:31+05:30","message":"request completed"}

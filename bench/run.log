@@ -1,0 +1,56 @@
+CLAIMS: 40 (E:\Projects\BestBeforeRot\bench\claims.jsonl)
+CACHE: off · DB E:\Projects\BestBeforeRot\bench\.bench_cache.db (deleted before the run)
+MODELS: extract=groq/openai/gpt-oss-20b judge=groq/openai/gpt-oss-120b
+
+[ 1/40] stale        -> stale            6.6s 1c src=3  The Notion Plus plan costs $5 per member per month.
+[ 2/40] stale        -> stale            3.2s 1c src=4  Spotify Premium Individual costs $9.99 per month in the Un
+[ 3/40] stale        -> stale            2.9s 1c src=3  The standard Netflix plan costs $15.49 per month in the Un
+[ 4/40] stale        -> stale            3.3s 1c src=3  Amazon Prime costs $119 per year in the United States.
+[ 5/40] stale        -> stale            4.2s 1c src=3  GPT-4 is OpenAI's most capable model.
+[ 6/40] stale        -> stale            3.2s 1c src=3  Claude 2 is Anthropic's newest model.
+[ 7/40] stale        -> fresh            3.2s 1c src=2  Gemini 1.5 Pro is Google's latest Gemini model.
+[ 8/40] stale        -> stale            3.3s 1c src=1  Python 3.11 is the latest stable release of Python.
+[ 9/40] stale        -> stale            3.9s 1c src=4  Node.js 18 is the current LTS version of Node.js.
+[10/40] stale        -> stale            3.3s 1c src=1  The iPhone 14 is Apple's newest iPhone.
+[11/40] stale        -> stale            2.9s 1c src=1  Tim Cook is the CEO of Apple.
+[12/40] stale        -> stale            2.7s 1c src=2  Jack Dorsey is the CEO of Twitter.
+Bifrost network error, retrying once: ReadTimeout
+[13/40] stale        -> stale           29.5s 1c src=2  Parag Agrawal is the CEO of Twitter.
+[14/40] stale        -> stale            4.6s 1c src=2  The EU AI Act entered into force in 2021.
+[15/40] stale        -> stale            3.9s 1c src=5  GDPR fines are capped at 10 million euros or 2% of global 
+[16/40] fresh        -> fresh            2.3s 1c src=4  The Notion Plus plan costs $10 per member per month when b
+[17/40] fresh        -> fresh            3.6s 1c src=5  ChatGPT Plus costs $20 per month.
+[18/40] fresh        -> fresh            3.1s 1c src=5  Claude Pro costs $20 per month.
+[19/40] fresh        -> fresh            3.2s 1c src=5  GitHub Copilot Pro costs $10 per month.
+[20/40] fresh        -> fresh            1.9s 1c src=5  Spotify Premium Individual costs $12.99 per month in the U
+Bifrost network error, retrying once: ReadTimeout
+[21/40] fresh        -> fresh           27.1s 1c src=3  The standard Netflix plan costs $19.99 per month in the Un
+[22/40] fresh        -> fresh            1.7s 1c src=3  Amazon Prime costs $139 per year in the United States.
+[23/40] fresh        -> fresh            4.2s 1c src=3  GPT-6.2 Astra is OpenAI's flagship model.
+[24/40] fresh        -> fresh            3.6s 1c src=3  Claude Fable 5.2 is Anthropic's most capable model.
+[25/40] fresh        -> fresh            4.0s 1c src=4  Python 3.15 is the latest stable release of Python.
+[26/40] fresh        -> fresh            4.1s 1c src=1  Node.js 26 is the current Active LTS version of Node.js.
+[27/40] fresh        -> fresh            3.0s 1c src=3  John Ternus is the CEO of Apple.
+[28/40] fresh        -> fresh            4.2s 1c src=4  Satya Nadella is the CEO of Microsoft.
+[29/40] fresh        -> skipped_stable   0.6s 0c src=0  The EU AI Act became applicable on 2 August 2026.
+[30/40] fresh        -> fresh            3.5s 1c src=4  The EU AI Act's obligations for general-purpose AI model p
+[31/40] unverifiable -> unverifiable     3.1s 1c src=0  Acme Cloud's Team plan costs $19 per seat per month.
+[32/40] unverifiable -> stale            3.0s 1c src=2  Loam Labs has 14 employees as of November 2026.
+[33/40] unverifiable -> unverifiable     2.7s 1c src=0  The internal codename for Notion's 2027 desktop client is 
+[34/40] unverifiable -> unverifiable     2.7s 1c src=0  Tesla will hold its 2027 annual shareholder meeting in Aus
+[35/40] unverifiable -> unverifiable     2.5s 1c src=0  Nordwind Analytics' enterprise plan includes 250 seats.
+[36/40] unverifiable -> unverifiable     2.7s 1c src=0  The average price of a flat white in Reykjavik in October 
+[37/40] unverifiable -> skipped_stable   0.8s 0c src=0  The city of Tartu issued 37 building permits for data cent
+[38/40] unverifiable -> unverifiable     2.8s 1c src=0  Brightline Robotics raised $18 million in its Series B rou
+[39/40] unverifiable -> stale            2.7s 1c src=2  The University of Tartu Library holds exactly 3,412,000 vo
+[40/40] unverifiable -> unverifiable     3.5s 1c src=0  Harborlight Bank's premium account charges a 3 euro monthl
+
+STALE RECALL:      14/15 (93.3%)
+STALE PRECISION:   14/16 (87.5%)
+FALSE ALARMS:      0/15 (0.0%)
+UNVERIFIABLE:      7/10 (70.0%)
+ACCURACY:          87.5%
+TAVILY CREDITS:    38 used vs 40 baseline (5.0% saved)
+LATENCY:           avg 4438 ms · median 3187 ms
+ERRORS:            0
+WROTE:             E:\Projects\BestBeforeRot\bench\results.md

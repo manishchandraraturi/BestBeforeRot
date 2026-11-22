@@ -39,7 +39,7 @@
 | P7a | UI shell | DONE (tests passed) | 2026-11-21 | `web/index.html` rewritten, `web/styles.css` new, `web/app.js` created empty; fonts 200 from Google, 0 console errors, no horizontal scroll at 1440 or 375 |
 | P7b | UI console | DONE (tests passed) | 2026-11-21 | Marquee gap fixed (8 spans, 0→-50%); console cards + `fetch /api/verify`; gate answer → 49 risky, Notion stale/red with `$12`, Sam Altman fresh/green, Eiffel Tower skipped; 0 console errors |
 | P7c | UI results polish | DONE (tests passed) | 2026-11-21 | Word-by-word strike → fix fade, TTL rings, Original/Corrected/Diff tabs, Copy corrected, scroll reveals, Results placeholder; 3 demo runs cold 4.7 s / warm 1.6 s / fallback 1.7 s, 0 console errors |
-| P8 | Benchmark | TODO | | |
+| P8 | Benchmark | DONE (tests passed) | 2026-11-22 | 40 hand-labelled claims (15 stale · 15 fresh · 10 unverifiable), cache off, every claim a live Tavily search; stale recall 14/15, stale precision 14/16, false alarms 0/15, unverifiable 7/10, 38 credits vs 40 baseline, avg 4.4 s, 0 errors; `bench/results.md` written and the UI Numbers section updated |
 | P9 | README / deck / video / submit | TODO | | |
 
 Status values: `TODO` · `DOING` · `DONE (tests passed)` · `BLOCKED`.
@@ -196,6 +196,10 @@ Note the 404 envelope: Bifrost *does* attempt the fallback when the primary mode
 | 38 | The Diff tab is computed in the browser with a word-level LCS: removed words `<s>`, added words `<u>`, no backgrounds | 04-DESIGN §4 asks for underline-only highlighting; the API has no diff field, so the browser derives it from `original_answer` and `corrected_answer` | P7c |
 | 39 | Scroll reveal keeps `IntersectionObserver` as the primary trigger **plus** an `revealInView()` pass on load, scroll and resize | IO only fires while frames render; the scroll pass keeps content visible if frames are throttled, without adding a library | P7c |
 | 40 | `Copy corrected` uses `navigator.clipboard.writeText` with a hidden-textarea `execCommand` fallback; the label flips to `Copied!` for 2 s | works on `127.0.0.1` and on hosts where the async clipboard is denied; no dependency | P7c |
+| 41 | Each benchmark claim is sent to `pipeline.verify()` **on its own**, `use_cache=False`, with `asyncio.sleep(1.2)` between claims | one claim per call makes the label↔verdict mapping exact (no answer-level splitting or claim-cap effects) and the sleep keeps the free Groq/Tavily tiers under their limits; 40 claims took 225 s | P8 |
+| 42 | `run_bench.py` points `CACHE_DB` at `bench/.bench_cache.db` and deletes it before the run | `use_cache=False` only skips the fact cache; the **search** cache in the same DB would still answer and make `tavily_credits_used=0` a lie. A bench-local DB also keeps the demo cache intact | P8 |
+| 43 | The benchmark records `stats.tavily_credits_used` per claim, not `llm_calls`; its baseline is 1 credit × 40 claims | the PRD quotes credits saved, and the baseline is what "search every sentence" would cost | P8 |
+| 44 | Prompts were **not** changed after the benchmark; the one stale miss (row 7) and the two "unverifiable → stale" rows are reported as-is in `results.md` | 05-TASKS P8 says fix prompts only if a bug is clear; one judge disagreement is not a clear bug, and 03-RULES prompts are frozen after P8 | P8 |
 
 ## 6. Working commands (add as they are proven)
 
@@ -268,6 +272,12 @@ curl -X DELETE http://127.0.0.1:8000/api/cache          # {"deleted":2}, then th
 # 375x812: scrollWidth 358, tabs 44 px, copy 44 px, result stats single column, answer text 281 px no overflow
 # which model IDs the gateway really serves (check before trusting .env)
 curl -s localhost:8080/v1/models | python -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
+# P8 gate (verified 2026-11-22, exit 0, 40/40 claims, 0 pipeline errors)
+npx -y @maximhq/bifrost          # gateway needed: every verify() call goes through Bifrost
+python bench/run_bench.py       # 225 s wall, 38 Tavily credits, writes bench/results.md
+#   STALE RECALL 14/15 (93.3%) · STALE PRECISION 14/16 (87.5%) · FALSE ALARMS 0/15 (0.0%)
+#   UNVERIFIABLE 7/10 (70.0%) · ACCURACY 87.5% · CREDITS 38 vs 40 baseline (5.0% saved)
+#   LATENCY avg 4438 ms · median 3187 ms · ERRORS 0 · skipped_stable 2
 ```
 
 ## 7. Environment (names only, never values)
@@ -328,17 +338,27 @@ Bifrost inference auth is **off** (`client.enforce_auth_on_inference = false`), 
 - `navigator.clipboard.readText()` is refused (`NotAllowedError`) in the automated preview, so the copy path was proven with a spy on `writeText` instead; the label change alone does not prove the write.
 - `preview_screenshot` returned an all-black frame for the scrolled Results section while the window was covered, even though `preview_evaluate` reported opacity 1 and real rects for the same elements — measurements are the reliable check in that state.
 - The tabs and `Copy corrected` only reach the 44 px tap target inside the ≤640 px media query; on desktop they stay 26/30 px tall so the underline sits right against the text.
+- `python bench/run_bench.py` puts `bench/` (not the repo root) on `sys.path`, so the first run died on `ModuleNotFoundError: app`; the script now inserts its parent directory explicitly. `scripts/*` never hit this because they run as `python -m scripts.x`.
+- `use_cache=False` disables only the **fact** cache; `tavily_client.search` still reads the 6-hour `searches` table in `CACHE_DB`, so a benchmark against the demo DB would report `0` credits while spending none. The runner points `CACHE_DB` at `bench/.bench_cache.db` and deletes it first.
+- Two claims in the P8 run took ~27–29 s (fallback hop to gemini), which is why the mean latency (4.4 s) is far above the median (3.2 s). Quote the median when comparing claim-level cost.
+- The P8 run had one stale miss (`Gemini 1.5 Pro is Google's latest Gemini model` → `fresh`, conf 0.93) and two made-up-company claims judged `stale` with confident corrections (Loam Labs, Tartu library volumes). The first is a judge/evidence miss; the second is search returning a real, same-named entity. Both are reported as-is — prompts stay frozen (decision 44).
+- Extraction typed two benchmark sentences as `stable` (the EU AI Act applicability date, the Tartu permit count) and the pipeline therefore skipped them: a fixed historical date is a permanent fact under the product's own volatility table, so a “fresh law” label only matches when the sentence states a changeable rule. Keep that in mind before calling it a recall bug.
+- `bench/.bench_cache.db*` and `bench/run.log` are local artefacts; the DB is deleted at the start of every run and neither should be committed.
 
-## 9. Benchmark snapshot (fill in P8)
+## 9. Benchmark snapshot (filled in P8)
 
 | Metric | Value |
 |---|---|
-| Claims tested | |
-| Stale recall | |
-| Stale precision | |
-| False-alarm rate | |
-| Avg latency (cold) | |
-| Tavily credits used / baseline | |
+| Claims tested | 40 · 15 stale · 15 fresh · 10 unverifiable (`bench/claims.jsonl`) |
+| Stale recall | 14/15 (93.3%) |
+| Stale precision | 14/16 (87.5%) |
+| False-alarm rate | 0/15 fresh claims called stale (0.0%) |
+| Unverifiable handling | 7/10 correctly `unverifiable`; 2 called stale, 1 skipped as stable |
+| Claim-level accuracy | 87.5% (35/40) |
+| Avg latency (cold) | 4 438 ms — median 3 187 ms, 29.5 s worst (one fallback hop) |
+| Tavily credits used / baseline | 38 / 40 (5.0% saved; 2 claims skipped as stable, 0 cache hits by design) |
+| Why savings look low here | every benchmark sentence is volatile by construction, so volatility gating can skip only 2 of 40; a normal mixed answer (demo) searches 2 of 3 claims |
+| Run details | 2026-11-22, 225 s wall, cache off, 0 pipeline errors; full table in `bench/results.md` |
 
 ## 10. Do-not-touch after freeze
 - Prompts (after P8)
