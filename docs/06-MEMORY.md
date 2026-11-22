@@ -40,7 +40,7 @@
 | P7b | UI console | DONE (tests passed) | 2026-11-21 | Marquee gap fixed (8 spans, 0→-50%); console cards + `fetch /api/verify`; gate answer → 49 risky, Notion stale/red with `$12`, Sam Altman fresh/green, Eiffel Tower skipped; 0 console errors |
 | P7c | UI results polish | DONE (tests passed) | 2026-11-21 | Word-by-word strike → fix fade, TTL rings, Original/Corrected/Diff tabs, Copy corrected, scroll reveals, Results placeholder; 3 demo runs cold 4.7 s / warm 1.6 s / fallback 1.7 s, 0 console errors |
 | P8 | Benchmark | DONE (tests passed) | 2026-11-22 | 40 hand-labelled claims (15 stale · 15 fresh · 10 unverifiable), cache off, every claim a live Tavily search; stale recall 14/15, stale precision 14/16, false alarms 0/15, unverifiable 7/10, 38 credits vs 40 baseline, avg 4.4 s, 0 errors; `bench/results.md` written and the UI Numbers section updated |
-| P9 | README / deck / video / submit | TODO | | |
+| P9 | README / deck / video / submit | DONE | 2026-11-22 | `README.md` rewritten (hero + badges, problem, TTL solution, Tavily + Bifrost roles, Mermaid flow, the real 40-claim benchmark table, setup, AI usage, honest limits) and `docs/PITCH_DECK.md` created (7 slides with speaker notes and a deck checklist); the demo video and the submission form are the human's remaining steps, not agent output |
 
 Status values: `TODO` · `DOING` · `DONE (tests passed)` · `BLOCKED`.
 
