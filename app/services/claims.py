@@ -24,6 +24,14 @@ _KEEP_PRIORITY: dict[Volatility, int] = {
 
 _FENCE = re.compile(r"^```[a-zA-Z]*\s*|\s*```$")
 
+# Trailing commas before a closing brace or bracket are the most common model JSON slip.
+_TRAILING_COMMA = re.compile(r",(\s*[}\]])")
+
+# VerifyRequest already caps answers at 4000 characters, so this only guards the extraction
+# prompt: it matches that cap rather than cutting the user's text mid-answer. A model that
+# still wraps the reply in prose is handled by the brace extraction in _extract_object().
+_MAX_ANSWER_CHARS = 4000
+
 
 class ParseError(Exception):
     """The model did not return usable claim JSON, even after one repair retry."""
@@ -57,29 +65,52 @@ def _model() -> str:
 
 def _messages(answer: str) -> list[dict]:
     """Build the extraction messages: frozen system prompt, today's date, then the answer."""
+    # Very long answers make the model drift off the schema and answer conversationally, so
+    # only the first _MAX_ANSWER_CHARS characters are sent to the extraction prompt. That is
+    # far more than MAX_CLAIMS claims need, and it keeps the reply parseable.
+    trimmed = answer[:_MAX_ANSWER_CHARS]
     return [
         {"role": "system", "content": CLAIMS_SYSTEM},
-        {"role": "user", "content": f"TODAY: {date.today().isoformat()}\nANSWER:\n{answer}"},
+        {"role": "user", "content": f"TODAY: {date.today().isoformat()}\nANSWER:\n{trimmed}"},
     ]
 
 
 def _strip_fences(text: str) -> str:
-    """Remove markdown code fences and any prose around the JSON object."""
-    cleaned = _FENCE.sub("", text.strip()).strip()
-    if cleaned.startswith("{") and cleaned.endswith("}"):
-        return cleaned
-    start, end = cleaned.find("{"), cleaned.rfind("}")
+    """Remove markdown code fences from a reply that contains no JSON object at all."""
+    return _FENCE.sub("", text.strip()).strip()
+
+
+def _extract_object(text: str) -> str:
+    """Slice the reply from its first '{' to its last '}'.
+
+    Whatever the model wrapped around the object - markdown fences, a leading "Sure, here is
+    the JSON:", a trailing explanation - is dropped, so only the JSON body is parsed.
+    """
+    start, end = text.find("{"), text.rfind("}")
     if start != -1 and end > start:
-        return cleaned[start : end + 1]
-    return cleaned
+        return text[start : end + 1]
+    return _strip_fences(text)
+
+
+def _repair_json(body: str) -> str:
+    """Undo the usual model JSON damage (trailing commas) before spending a repair call."""
+    return _TRAILING_COMMA.sub(r"\1", body)
 
 
 def _parse(text: str) -> RawClaims:
     """Turn one model reply into RawClaims, or raise ParseError."""
+    body = _extract_object(text)
     try:
-        payload = json.loads(_strip_fences(text))
+        payload = json.loads(body)
     except json.JSONDecodeError as exc:
-        raise ParseError(f"claim JSON did not parse: {exc.msg}") from exc
+        # A cheap local fix (trailing commas, ...) beats a second model round trip.
+        patched = _repair_json(body)
+        if patched == body:
+            raise ParseError(f"claim JSON did not parse: {exc.msg}") from exc
+        try:
+            payload = json.loads(patched)
+        except json.JSONDecodeError:
+            raise ParseError(f"claim JSON did not parse: {exc.msg}") from exc
     try:
         return RawClaims.model_validate(payload)
     except ValidationError as exc:

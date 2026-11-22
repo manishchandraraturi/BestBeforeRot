@@ -680,6 +680,8 @@ img, svg { display: block; max-width: 100%; }
 .score[data-band="fresh"] .ring-progress { stroke: var(--fresh); }
 .score[data-band="mixed"] .ring-progress { stroke: var(--unsure); }
 .score[data-band="risky"] .ring-progress { stroke: var(--stale); }
+.score[data-band="neutral"] .ring-progress { stroke: var(--line); }
+.score[data-band="neutral"] .score-value { color: var(--fg-2); }
 
 .score-center {
   position: absolute;
@@ -956,6 +958,18 @@ img, svg { display: block; max-width: 100%; }
   margin: 0;
   font-size: .95rem;
   color: var(--fg-2);
+}
+
+/* all claims skipped as non-volatile: neutral note instead of a score and verdicts */
+.claim-empty.is-neutral {
+  margin: 0 0 14px;
+  padding: 16px 18px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
 }
 
 .sources {

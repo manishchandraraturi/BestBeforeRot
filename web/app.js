@@ -42,6 +42,7 @@
 
   var tickerTimer = null;
   var countFrame = null;
+  var countTimer = null;
   var copyTimer = null;
   var lastResult = null;
   var activeTab = "corrected";
@@ -96,6 +97,7 @@
     var settled = false;
 
     if (countFrame) cancelAnimationFrame(countFrame);
+    if (countTimer) clearTimeout(countTimer);
     el.setAttribute("data-value", String(target));
 
     function finish() {
@@ -117,10 +119,22 @@
 
     countFrame = requestAnimationFrame(step);
     // rAF pauses in a hidden/minimised window; snap to the final number anyway.
-    setTimeout(finish, duration + 150);
+    countTimer = setTimeout(finish, duration + 150);
   }
 
-  function paintScore(value, band) {
+  function paintScore(value, band, neutral) {
+    if (neutral) {
+      // Nothing was searched, so a percentage would be meaningless — 100 would be a lie.
+      // Drop any count-up still running from the previous result before writing the dash.
+      if (countFrame) cancelAnimationFrame(countFrame);
+      if (countTimer) clearTimeout(countTimer);
+      score.setAttribute("data-band", "neutral");
+      scoreValue.textContent = "—";
+      scoreValue.setAttribute("data-value", "0");
+      scoreBand.textContent = "NO RISK";
+      scoreRing.style.strokeDashoffset = String(CIRC);
+      return;
+    }
     var safe = Math.max(0, Math.min(100, Number(value) || 0));
     score.setAttribute("data-band", band || "mixed");
     scoreBand.textContent = band || "—";
@@ -350,9 +364,17 @@
     return card;
   }
 
-  function paintClaims(claims) {
+  function paintClaims(claims, neutral) {
     claimsEl.textContent = "";
+    if (neutral) {
+      var note = document.createElement("p");
+      note.className = "claim-empty is-neutral";
+      note.textContent =
+        "No volatile claims found. All claims appear to be historical facts or stable definitions.";
+      claimsEl.appendChild(note);
+    }
     if (!claims || !claims.length) {
+      if (neutral) return;
       var empty = document.createElement("p");
       empty.className = "claim-empty";
       empty.textContent = "Nothing here can go stale ✦ all claims are stable.";
@@ -496,11 +518,20 @@
   function render(data) {
     stopTicker();
     lastResult = data;
-    setState("result", "CHECKED");
-    paintScore(data.overall_score, data.overall_band);
-    paintStats(data.stats);
-    paintBadges(data.stats);
-    paintClaims(data.claims);
+    var stats = data.stats || {};
+    var claims = data.claims || [];
+    // Every claim was skipped as non-volatile, so there is no freshness score to give.
+    // The statuses decide this, not claims_searched: a cache hit reports 0 searches too.
+    var neutral = claims.length
+      ? claims.every(function (claim) {
+          return claim.status === "skipped_stable";
+        })
+      : (stats.claims_searched || 0) === 0 && (stats.claims_skipped_stable || 0) > 0;
+    setState("result", neutral ? "NO VOLATILE CLAIMS" : "CHECKED");
+    paintScore(data.overall_score, data.overall_band, neutral);
+    paintStats(stats);
+    paintBadges(stats);
+    paintClaims(claims, neutral);
     paintAnswer("corrected");
     setCopyLabel("Copy corrected", false);
   }
